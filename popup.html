@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>HN English 配置</title>
+<style>
+  body {
+    width: 320px;
+    margin: 0;
+    padding: 14px;
+    font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #222;
+  }
+  h1 { font-size: 14px; margin: 0 0 10px; }
+  label { display: block; margin-top: 8px; font-size: 12px; color: #555; }
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    margin-top: 3px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font: inherit;
+  }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  button {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    background: #f6f6f6;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+  }
+  button.primary { background: #ff6600; color: #fff; border-color: #ff6600; }
+  .hint { font-size: 11px; color: #888; margin-top: 8px; line-height: 1.5; }
+  .status { margin-top: 8px; font-size: 12px; min-height: 16px; }
+  .status.ok { color: #2a8a2a; }
+  .status.err { color: #c0392b; }
+  hr { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+  h2 { font-size: 13px; margin: 0 0 6px; color: #333; }
+  .count { font-size: 12px; color: #555; margin-bottom: 6px; }
+  .count b { color: #ff6600; }
+  button.danger { color: #c0392b; }
+  details.tts-help {
+    margin-top: 10px;
+    font-size: 12px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 6px 10px;
+    background: #fafafa;
+  }
+  details.tts-help summary {
+    cursor: pointer;
+    color: #555;
+    user-select: none;
+  }
+  details.tts-help ol {
+    margin: 6px 0 4px;
+    padding-left: 20px;
+    color: #555;
+  }
+  details.tts-help li { margin: 2px 0; }
+  details.tts-help code {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font: 11px ui-monospace, "Consolas", monospace;
+    color: #c0392b;
+  }
+  .copy-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 6px 0;
+  }
+  .copy-row code {
+    flex: 1;
+    padding: 4px 6px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    color: #c0392b;
+    font: 11px ui-monospace, "Consolas", monospace;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .copy-row button {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  .note {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+  <h1>HN English · API 配置</h1>
+
+  <label>Base URL（OpenAI 兼容）</label>
+  <input id="baseURL" placeholder="https://api.deepseek.com/v1" />
+
+  <label>Model</label>
+  <input id="model" placeholder="deepseek-chat" />
+
+  <label>API Key</label>
+  <input id="apiKey" type="password" placeholder="sk-..." />
+
+  <div class="row">
+    <button id="save" class="primary">保存</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="hint">
+    保存后会请求访问该 API 域名的权限。Key 仅存在本机 chrome.storage.local。<br>
+    常见示例：<br>
+    · DeepSeek：<code>https://api.deepseek.com/v1</code> + <code>deepseek-chat</code><br>
+    · OpenAI：<code>https://api.openai.com/v1</code> + <code>gpt-4o-mini</code><br>
+    · Moonshot：<code>https://api.moonshot.cn/v1</code> + <code>moonshot-v1-8k</code>
+  </div>
+
+  <hr>
+
+  <h2>Anki 卡片</h2>
+  <div class="count">已攒 <b id="cardCount">0</b> 张</div>
+  <div class="row">
+    <button id="export" class="primary">导出 .txt</button>
+    <button id="clear" class="danger">清空</button>
+  </div>
+  <div class="status" id="cardStatus"></div>
+  <div class="hint">
+    导出后在 Anki 桌面端：文件 → 导入 → 选这个 .txt。<br>
+    头部指令已写好（Tab 分隔、HTML 渲染、问答题 牌型、HN English 牌组）。
+  </div>
+
+  <details class="tts-help">
+    <summary>让 Anki 自动朗读英文（一次性设置）</summary>
+    <ol>
+      <li>Anki → <b>工具</b> → <b>管理笔记类型</b></li>
+      <li>选「<b>问答题</b>」→ 右边点 <b>卡片</b></li>
+      <li>「正面内容模版」里在 <code>{{正面}}</code> 下面新加一行：</li>
+    </ol>
+    <div class="copy-row">
+      <code id="ttsLine">{{tts en_US:正面}}</code>
+      <button id="copyTts">复制</button>
+    </div>
+    <ol start="4">
+      <li>点 <b>保存</b>。以后所有卡片正面英文自动朗读。</li>
+    </ol>
+    <div class="note">
+      英文版 Anki 字段叫 Front，把上面的 <code>正面</code> 换成 <code>Front</code>。<br>
+      想换音色：<code>{{tts en_US voices=Microsoft_David:正面}}</code>
+    </div>
+  </details>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "WordHook",
+  "version": "0.1.0",
+  "description": "Select English to learn: LLM-grade explanations, TTS, one-click Anki export.",
+  "permissions": ["storage"],
+  "optional_host_permissions": ["https://*/*"],
+  "host_permissions": [
+    "https://news.ycombinator.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://news.ycombinator.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "HN English",
+    "default_popup": "popup.html"
+  }
+}

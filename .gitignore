@@ -1,0 +1,16 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts
+*.zip
+dist/
+
+# Local notes / drafts
+NOTES.md
+TODO.md

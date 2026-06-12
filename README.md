@@ -15,7 +15,7 @@
 - **划词触发**：在支持的站上选中任意英文 / 中文，弹出悬浮窗
 - **双向翻译**：
   - 选英文 → 中文解释（翻译 / 直译 / 句式 / 语法 / 重点词）
-  - 选中文 → 英文翻译 + 用英文讲清这英文怎么用（Structure / Grammar / Key Words）
+  - 选中文 → 英文翻译 + 中文解析这句英文怎么造（句式 / 语法 / 重点词）
 - **单词 / 句子两种模式**：按长度和标点自动判定，顶部按钮可手动切换
 - **流式渲染**：边接收 LLM 输出边渲染分区，翻译大约 1 秒就出现，完整分析 5–8 秒
 - **本地朗读**：调用系统 TTS，免费、离线、零成本
@@ -26,7 +26,7 @@
 
 ### 方式 A：下载 Release 包（推荐）
 
-1. 下载 [wordhook-v0.3.0.zip](https://github.com/shenmuegit/WordHook/releases/download/v0.3.0/wordhook-v0.3.0.zip) 并解压
+1. 下载 [wordhook-v0.3.1.zip](https://github.com/shenmuegit/WordHook/releases/download/v0.3.1/wordhook-v0.3.1.zip) 并解压
 2. 打开 `chrome://extensions/`，右上角开启「**开发者模式**」
 3. 点「**加载已解压的扩展程序**」，选解压后的文件夹
 

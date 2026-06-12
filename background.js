@@ -223,12 +223,16 @@ async function getCards() {
   return Array.isArray(cards) ? cards : [];
 }
 
+function sourceFromUrl(u) {
+  try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return 'web'; }
+}
+
 async function saveCard(card) {
   const cards = await getCards();
   cards.push({
     id: (crypto.randomUUID && crypto.randomUUID()) || String(Date.now()) + Math.random().toString(36).slice(2),
     createdAt: new Date().toISOString().slice(0, 10),
-    source: 'Hacker News',
+    source: card.url ? sourceFromUrl(card.url) : 'web',
     ...card
   });
   await chrome.storage.local.set({ [CARDS_KEY]: cards });

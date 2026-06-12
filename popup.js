@@ -82,14 +82,15 @@ function buildAnkiTxt(cards) {
   const headers = [
     '#separator:Tab',
     '#html:true',
-    '#deck:HN English',
+    '#deck:WordHook',
     '#notetype:Basic',
     '#tags column:3'
   ];
   const lines = cards.map((c) => {
-    const tag = `HN-${c.type || 'vocab'}`;
+    const typeTag = `wordhook-${c.type || 'vocab'}`;
+    const srcTag = c.source ? `src-${c.source.replace(/[^a-zA-Z0-9.-]/g, '_')}` : '';
     const date = c.createdAt || '';
-    const tags = [tag, date].filter(Boolean).join(' ');
+    const tags = [typeTag, srcTag, date].filter(Boolean).join(' ');
     return [escapeField(c.front), escapeField(c.back), tags].join('\t');
   });
   return [...headers, ...lines, ''].join('\n');

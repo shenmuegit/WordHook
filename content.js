@@ -39,15 +39,31 @@
     } catch {}
   }
 
-  // ——— 模式判断 ———
+  // ——— 语言 / 模式判断 ———
+  function detectLang(text) {
+    // CJK Unified Ideographs (基本汉字) + Extension A
+    const zh = (text.match(/[一-鿿㐀-䶿]/g) || []).length;
+    const en = (text.match(/[a-zA-Z]/g) || []).length;
+    if (zh + en === 0) return 'en';
+    return zh > en ? 'zh' : 'en';
+  }
   function detectMode(text) {
     const t = text.trim();
     if (!t) return 'word';
+    const lang = detectLang(t);
+    if (lang === 'zh') {
+      if (/[.!?。！？]/.test(t)) return 'zh_sentence';
+      const chars = t.replace(/\s/g, '').length;
+      if (chars <= 4 && !/[,;:，；：]/.test(t)) return 'zh_word';
+      return 'zh_sentence';
+    }
     if (/[.!?。！？]/.test(t)) return 'sentence';
     const wordCount = t.split(/\s+/).filter(Boolean).length;
     if (wordCount <= 3 && !/[,;:，；：]/.test(t)) return 'word';
     return 'sentence';
   }
+  function modeBase(m) { return m && m.startsWith('zh_') ? m.slice(3) : m; }
+  function modeIsZh(m) { return m && m.startsWith('zh_'); }
 
   // ——— Host / Shadow DOM ———
   function ensureHost() {
@@ -220,9 +236,10 @@
 
     shadow.querySelectorAll('.mode-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const mode = btn.getAttribute('data-mode');
-        if (mode === currentMode) return;
-        currentMode = mode;
+        const base = btn.getAttribute('data-mode'); // 'word' | 'sentence'
+        const next = modeIsZh(currentMode) ? `zh_${base}` : base;
+        if (next === currentMode) return;
+        currentMode = next;
         updateModeButtons();
         analyze();
       });
@@ -250,8 +267,9 @@
   function popupEl() { return shadow().querySelector('.popup'); }
   function bodyEl() { return shadow().querySelector('.body'); }
   function updateModeButtons() {
+    const base = modeBase(currentMode);
     shadow().querySelectorAll('.mode-btn').forEach((btn) => {
-      btn.classList.toggle('active', btn.getAttribute('data-mode') === currentMode);
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === base);
     });
   }
 
@@ -361,6 +379,69 @@
     `;
   }
 
+  // —— zh→en 模式的卡片构造与渲染 ——
+  function makeVocabCardZh(w) {
+    const back = [
+      w.word && `<b>${escape(w.word)}</b>`,
+      w.pos && `<i>${escape(w.pos)}</i>`,
+      w.ipa && `<span style="font-family:ui-monospace,monospace">${escape(w.ipa)}</span>`,
+      w.meaning_en && escape(w.meaning_en),
+      w.example_en && `e.g. <i>${escape(w.example_en)}</i>`,
+      w.example_zh && escape(w.example_zh)
+    ].filter(Boolean).join('<br>');
+    return {
+      type: 'vocab-zh',     // 前=中文，背=英文释义；TTS 模板用 {{tts en_US:背面}} 才会念
+      front: escape(currentText),
+      back,
+      context: currentText,
+      example: w.example_en || '',
+      url: location.href
+    };
+  }
+
+  function makeSentenceCardZh(data) {
+    const parts = [];
+    if (data.english) parts.push(`<b>EN:</b> ${escape(data.english)}`);
+    if (data.structure_en) parts.push(`<b>Structure:</b> ${escape(data.structure_en)}`);
+    if (Array.isArray(data.grammar_en) && data.grammar_en.length) {
+      parts.push(`<b>Grammar:</b><br>${data.grammar_en.map(g => '• ' + escape(g)).join('<br>')}`);
+    }
+    return {
+      type: 'sentence-zh',
+      front: escape(currentText),
+      back: parts.join('<br>'),
+      context: currentText,
+      example: '',
+      url: location.href
+    };
+  }
+
+  function renderWordCardZh(w, opts) {
+    opts = opts || {};
+    let saveBtn = '';
+    if (!opts.streaming && w.word) {
+      const idx = pushCard(makeVocabCardZh(w));
+      saveBtn = `<button class="save-btn" data-save-idx="${idx}" title="Save as Anki card">存</button>`;
+    }
+    return `
+      <div class="word-card">
+        <div class="word-head">
+          ${w.word ? `<span class="w">${escape(w.word)}</span>` : ''}
+          ${w.word ? `<button class="speak-btn mini" data-speak="${escape(w.word)}" title="Speak">🔊</button>` : ''}
+          ${w.pos ? `<span class="pos">${escape(w.pos)}</span>` : ''}
+          ${w.ipa ? `<span class="ipa">${escape(w.ipa)}</span>` : ''}
+          ${saveBtn}
+        </div>
+        ${w.meaning_en ? `<div class="word-meaning">${escape(w.meaning_en)}</div>` : ''}
+        ${w.example_en ? `
+          <div class="word-example">
+            <div class="en">${escape(w.example_en)} <button class="speak-btn mini" data-speak="${escape(w.example_en)}" title="Speak">🔊</button></div>
+            ${w.example_zh ? `<div class="cn">${escape(w.example_zh)}</div>` : ''}
+          </div>` : ''}
+      </div>
+    `;
+  }
+
   // 点击"存"按钮：发消息给 background 落盘
   function handleSaveClick(btn) {
     const idx = +btn.dataset.saveIdx;
@@ -442,11 +523,11 @@
         }
       } else if (c === ']' && depth === 0) break;
     }
-    // 最后一个未闭合的对象：抓已出现的字段
+    // 最后一个未闭合的对象：抓已出现的字段（两套字段名都试）
     if (depth > 0 && objStart >= 0) {
       const partial = {};
       const partialBuf = buf.slice(objStart);
-      for (const k of ['word', 'pos', 'ipa', 'meaning_cn', 'example_en', 'example_cn']) {
+      for (const k of ['word', 'pos', 'ipa', 'meaning_cn', 'meaning_en', 'example_en', 'example_cn', 'example_zh']) {
         const v = extractStringField(partialBuf, k);
         if (v !== null) partial[k] = v;
       }
@@ -458,6 +539,7 @@
     const data = {};
     const mode = extractStringField(buf, 'mode');
     if (mode) data.mode = mode;
+    // en→zh 字段
     for (const k of ['translation_cn', 'literal_cn', 'structure_cn']) {
       const v = extractStringField(buf, k);
       if (v !== null) data[k] = v;
@@ -466,6 +548,15 @@
     if (grammar && grammar.length) data.grammar_cn = grammar;
     const words = extractObjectsArray(buf, 'words');
     if (words && words.length) data.words = words;
+    // zh→en 字段
+    for (const k of ['english', 'structure_en']) {
+      const v = extractStringField(buf, k);
+      if (v !== null) data[k] = v;
+    }
+    const grammarEn = extractStringArray(buf, 'grammar_en');
+    if (grammarEn && grammarEn.length) data.grammar_en = grammarEn;
+    const wordsEn = extractObjectsArray(buf, 'words_en');
+    if (wordsEn && wordsEn.length) data.words_en = wordsEn;
     return data;
   }
 
@@ -477,15 +568,45 @@
 
     const wOpts = { streaming: !!opts.streaming };
     const parts = [];
-    const isWordMode = data.mode === 'word' || (currentMode === 'word' && !data.translation_cn);
+    const isZh = modeIsZh(currentMode) || data.mode === 'zh_word' || data.mode === 'zh_sentence';
+    const base = modeBase(currentMode);
 
-    if (isWordMode) {
+    if (isZh && base === 'word') {
+      // zh→en 单词模式：一张英文 word card
+      const words = data.words_en || [];
+      if (words.length) {
+        parts.push(words.map((w) => renderWordCardZh(w, wOpts)).join(''));
+      }
+    } else if (isZh && base === 'sentence') {
+      // zh→en 句子模式：英文翻译 + Structure / Grammar / Key Words（标签英文）
+      if (!opts.streaming) {
+        const sCard = makeSentenceCardZh(data);
+        if (sCard.back) {
+          const idx = pushCard(sCard);
+          parts.push(`<div class="save-row"><button class="save-btn" data-save-idx="${idx}" title="Save sentence as Anki card">Save</button></div>`);
+        }
+      }
+      if (data.english) {
+        parts.push(`<div class="section"><div class="translation">${escape(data.english)} <button class="speak-btn mini" data-speak="${escape(data.english)}" title="Speak">🔊</button></div></div>`);
+      }
+      if (data.structure_en) {
+        parts.push(`<div class="section"><h4>Structure</h4><div class="structure">${escape(data.structure_en)}</div></div>`);
+      }
+      if (Array.isArray(data.grammar_en) && data.grammar_en.length) {
+        parts.push(`<div class="section"><h4>Grammar</h4><ul class="grammar">${
+          data.grammar_en.map((g) => `<li>${escape(g)}</li>`).join('')
+        }</ul></div>`);
+      }
+      if (Array.isArray(data.words_en) && data.words_en.length) {
+        parts.push(`<div class="section"><h4>Key Words</h4>${data.words_en.map((w) => renderWordCardZh(w, wOpts)).join('')}</div>`);
+      }
+    } else if (base === 'word') {
       const words = data.words || [];
       if (words.length) {
         parts.push(words.map((w) => renderWordCard(w, wOpts)).join(''));
       }
     } else {
-      // 句子模式：先放"存整句"按钮（仅 final）
+      // en→zh 句子模式（原有）
       if (!opts.streaming) {
         const sCard = makeSentenceCard(data);
         if (sCard.back) {
@@ -514,10 +635,13 @@
 
     let html = parts.join('');
     if (opts.streaming) {
-      const meta = `<div class="stream-meta">生成中 · ${opts.chars || 0} 字符</div>`;
-      html = html ? meta + html : meta + `<div class="loading">等待首批 token…</div>`;
+      const meta = isZh
+        ? `<div class="stream-meta">Generating · ${opts.chars || 0} chars</div>`
+        : `<div class="stream-meta">生成中 · ${opts.chars || 0} 字符</div>`;
+      const loadingMsg = isZh ? 'Waiting for first tokens…' : '等待首批 token…';
+      html = html ? meta + html : meta + `<div class="loading">${loadingMsg}</div>`;
     } else if (!html) {
-      html = `<div class="error">LLM 返回为空</div>`;
+      html = isZh ? `<div class="error">Empty LLM response</div>` : `<div class="error">LLM 返回为空</div>`;
     }
     return html;
   }

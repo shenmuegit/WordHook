@@ -32,11 +32,22 @@ function cacheKey(model, mode, text) {
 
 // ——— Prompt ———
 
-const SYSTEM_PROMPT = `你在帮一个完全不懂英语的中国初学者理解一段英文。
+const SYSTEM_PROMPT_EN_TO_ZH = `你在帮一个完全不懂英语的中国初学者理解一段英文。
 所有解释用中文；不要用语法术语，必须用时立刻用大白话解释；
 词性写"动词/名词/形容词/副词/介词/连词/代词/冠词"等中文；
 每个英文例句都要配中文翻译；例句用词要简单。
 严格按用户给定的 JSON 结构返回，只输出 JSON，不要 markdown 围栏，不要多余文字。`;
+
+const SYSTEM_PROMPT_ZH_TO_EN = `You are helping a Chinese learner of English see how a Chinese phrase or sentence is expressed in natural English, and how that English actually works.
+
+Output the natural English translation first. Then explain the English itself in plain, simple English — what is being said, how the grammar functions, what each key word means. Use simple vocabulary a beginner can follow. Avoid grammar jargon; if you must use a term, immediately rephrase it in plain English. Always give each English example sentence a short Chinese translation.
+
+Strictly follow the JSON structure the user gives. Output only the JSON — no markdown fences, no extra prose.`;
+
+function getSystemPrompt(mode) {
+  if (mode === 'zh_word' || mode === 'zh_sentence') return SYSTEM_PROMPT_ZH_TO_EN;
+  return SYSTEM_PROMPT_EN_TO_ZH;
+}
 
 function userPrompt(mode, text) {
   if (mode === 'word') {
@@ -57,7 +68,8 @@ function userPrompt(mode, text) {
   ]
 }`;
   }
-  return `请分析这句英文：「${text}」
+  if (mode === 'sentence') {
+    return `请分析这句英文：「${text}」
 
 严格按以下 JSON 返回：
 {
@@ -79,6 +91,53 @@ function userPrompt(mode, text) {
 }
 
 只挑 2–3 个最关键的词放 words；只挑 2–3 个最重要的语法点放 grammar_cn。宁可少而懂。`;
+  }
+  if (mode === 'zh_word') {
+    return `Translate this Chinese word or phrase into natural English, then explain it briefly in plain English.
+
+Input (Chinese): "${text}"
+
+Return strictly this JSON:
+{
+  "mode": "zh_word",
+  "words_en": [
+    {
+      "word": "the English translation",
+      "pos": "noun / verb / adjective / adverb / preposition / ...",
+      "ipa": "/IPA of the English/",
+      "meaning_en": "Plain-English meaning. Add short usage notes in parentheses if helpful.",
+      "example_en": "A short simple English example sentence using the word",
+      "example_zh": "Chinese translation of the example"
+    }
+  ]
+}
+
+If multiple translations are equally natural, give the most common one only.`;
+  }
+  // zh_sentence
+  return `Translate this Chinese sentence into natural English, then explain the English itself.
+
+Input (Chinese): "${text}"
+
+Return strictly this JSON:
+{
+  "mode": "zh_sentence",
+  "english": "Natural fluent English translation",
+  "structure_en": "Explain in plain simple English what the English sentence is saying, where its emphasis or pivot is. No jargon.",
+  "grammar_en": ["Grammar point 1, plain-English explanation of one structure used", "Grammar point 2"],
+  "words_en": [
+    {
+      "word": "key English word taken from the translation",
+      "pos": "noun / verb / adjective / ...",
+      "ipa": "/IPA/",
+      "meaning_en": "Brief plain-English explanation",
+      "example_en": "Another short example sentence using this word",
+      "example_zh": "Chinese translation of the example"
+    }
+  ]
+}
+
+Pick only 2–3 most important grammar points and 2–3 key words. Keep all English simple — vocabulary a beginner can read.`;
 }
 
 // ——— SSE 流式解析 ———
@@ -88,7 +147,7 @@ async function streamLLM({ baseURL, apiKey, model }, mode, text, onChunk, signal
   const body = {
     model,
     messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: getSystemPrompt(mode) },
       { role: 'user', content: userPrompt(mode, text) }
     ],
     response_format: { type: 'json_object' },

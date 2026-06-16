@@ -13,6 +13,7 @@ dist/
 
 # Desktop dependencies
 desktop/node_modules/
+desktop/*.log
 
 # Local notes / drafts
 NOTES.md

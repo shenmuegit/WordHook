@@ -10,6 +10,10 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function copySentinel() {
+  return `__WORDHOOK_COPY_SENTINEL__${Date.now()}_${Math.random().toString(36).slice(2)}__`;
+}
+
 function helperScript() {
   return `
 Add-Type @"
@@ -123,6 +127,17 @@ async function sendCtrlC() {
   });
 }
 
+async function readClipboardAfterCopy(sentinel) {
+  const deadline = Date.now() + 320;
+  while (Date.now() < deadline) {
+    const value = clipboard.readText();
+    if (value && value !== sentinel) return value.trim();
+    await delay(20);
+  }
+  const value = clipboard.readText();
+  return value && value !== sentinel ? value.trim() : '';
+}
+
 async function warmSelectionCapture() {
   await ensureHelper();
 }
@@ -136,15 +151,15 @@ async function stopSelectionCapture() {
 
 async function captureSelectedText() {
   const previousText = clipboard.readText();
+  const sentinel = copySentinel();
 
   try {
     // globalShortcut fires while the trigger keys may still be held.
     // Give Ctrl/Shift/T a moment to release before sending Ctrl+C.
     await delay(120);
-    clipboard.writeText('');
+    clipboard.writeText(sentinel);
     await sendCtrlC();
-    await delay(80);
-    return clipboard.readText().trim();
+    return await readClipboardAfterCopy(sentinel);
   } finally {
     clipboard.writeText(previousText);
   }

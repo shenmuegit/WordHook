@@ -99,4 +99,6 @@ test('translation window can show immediately without stealing focus before copy
   assert.equal(createdWindows[0].options.show, false);
   assert(createdWindows[0].calls.some((call) => call[0] === 'showInactive'));
   assert(!createdWindows[0].calls.some((call) => call[0] === 'focus'));
+  assert(!createdWindows[0].calls.some((call) => call[0] === 'restore'));
+  assert(!createdWindows[0].calls.some((call) => call[0] === 'moveTop'));
 });

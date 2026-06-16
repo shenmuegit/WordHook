@@ -91,8 +91,6 @@ function ensureTranslateWindow() {
 function showTranslateWindowInactive() {
   if (!translateWindow || translateWindow.isDestroyed()) return;
   try { translateWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
-  try { translateWindow.moveTop(); } catch {}
-  try { translateWindow.restore(); } catch {}
   if (typeof translateWindow.showInactive === 'function') {
     translateWindow.showInactive();
   } else {

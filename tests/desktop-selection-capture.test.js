@@ -78,7 +78,9 @@ test('capture waits for global hotkey release before sending copy', async () => 
   const text = await api.captureSelectedText();
 
   assert.equal(text, 'selected text');
-  const clearIndex = events.findIndex((event) => event[0] === 'writeText' && event[1] === '');
+  const clearIndex = events.findIndex((event) => (
+    event[0] === 'writeText' && /^__WORDHOOK_COPY_SENTINEL__/.test(event[1])
+  ));
   const copyIndex = events.findIndex((event) => event[0] === 'stdin.write');
   const firstDelayIndex = events.findIndex((event) => event[0] === 'delay');
 
@@ -98,4 +100,14 @@ test('selection capture can be warmed and reused without spawning per capture', 
   assert.equal(events.filter((event) => event[0] === 'spawn').length, 1);
   assert.equal(events.filter((event) => event[0] === 'execFile').length, 0);
   assert.equal(events.filter((event) => event[0] === 'stdin.write').length, 2);
+});
+
+test('selection capture uses a sentinel so stale clipboard text is not accepted', async () => {
+  const { api, events } = loadSelectionModule();
+
+  await api.captureSelectedText();
+
+  const clearEvent = events.find((event) => event[0] === 'writeText' && event[1] !== 'previous');
+  assert(clearEvent);
+  assert.match(clearEvent[1], /^__WORDHOOK_COPY_SENTINEL__/);
 });

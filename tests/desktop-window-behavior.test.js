@@ -27,6 +27,7 @@ function loadWindowsModule() {
 
     isDestroyed() { return this.destroyed; }
     show() { this.calls.push(['show']); }
+    showInactive() { this.calls.push(['showInactive']); }
     focus() { this.calls.push(['focus']); }
     restore() { this.calls.push(['restore']); }
     moveTop() { this.calls.push(['moveTop']); }
@@ -87,4 +88,14 @@ test('opening an existing translation window brings it back to front', () => {
   assert(createdWindows[0].calls.some((call) => call[0] === 'moveTop'));
   assert(createdWindows[0].calls.some((call) => call[0] === 'setAlwaysOnTop' && call[1] === true));
   assert(createdWindows[0].calls.some((call) => call[0] === 'webContents.send' && call[1] === 'translation:start'));
+});
+
+test('translation window can show immediately without stealing focus before copy', () => {
+  const { api, createdWindows } = loadWindowsModule();
+
+  api.openTranslateWindow('', { focus: false });
+
+  assert.equal(createdWindows.length, 1);
+  assert(createdWindows[0].calls.some((call) => call[0] === 'showInactive'));
+  assert(!createdWindows[0].calls.some((call) => call[0] === 'focus'));
 });

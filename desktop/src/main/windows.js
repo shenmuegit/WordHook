@@ -33,14 +33,16 @@ function openConfigWindow() {
   return configWindow;
 }
 
-function openTranslateWindow(sourceText) {
+function openTranslateWindow(sourceText, options = {}) {
+  const shouldFocus = options.focus !== false;
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
   const winWidth = 360;
   const winHeight = 260;
 
   if (translateWindow && !translateWindow.isDestroyed()) {
-    bringTranslateWindowToFront();
+    if (shouldFocus) bringTranslateWindowToFront();
+    else showTranslateWindowInactive();
   } else {
     translateWindow = new BrowserWindow({
       width: winWidth,
@@ -63,7 +65,8 @@ function openTranslateWindow(sourceText) {
     });
   }
 
-  bringTranslateWindowToFront();
+  if (shouldFocus) bringTranslateWindowToFront();
+  else showTranslateWindowInactive();
 
   translateWindow.webContents.once('did-finish-load', () => {
     sendToTranslate('translation:start', { sourceText });
@@ -74,6 +77,18 @@ function openTranslateWindow(sourceText) {
   }
 
   return translateWindow;
+}
+
+function showTranslateWindowInactive() {
+  if (!translateWindow || translateWindow.isDestroyed()) return;
+  try { translateWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+  try { translateWindow.moveTop(); } catch {}
+  try { translateWindow.restore(); } catch {}
+  if (typeof translateWindow.showInactive === 'function') {
+    translateWindow.showInactive();
+  } else {
+    translateWindow.show();
+  }
 }
 
 function bringTranslateWindowToFront() {
@@ -95,5 +110,6 @@ module.exports = {
   openConfigWindow,
   openTranslateWindow,
   bringTranslateWindowToFront,
+  showTranslateWindowInactive,
   sendToTranslate
 };

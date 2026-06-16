@@ -98,7 +98,7 @@ async function translateText(sourceText) {
 }
 
 async function translateCurrentSelection() {
-  openTranslateWindow('');
+  openTranslateWindow('', { focus: false });
   sendToTranslate('translation:status', { status: '读取选区...' });
 
   const text = await captureSelectedText().catch((error) => {

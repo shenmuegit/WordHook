@@ -9,7 +9,7 @@ const {
 } = require('electron');
 
 const { readConfig, writeConfig, hasApiConfig } = require('./config-store');
-const { captureSelectedText } = require('./selection');
+const { captureSelectedText, warmSelectionCapture, stopSelectionCapture } = require('./selection');
 const { streamChatCompletion } = require('./llm');
 const { openConfigWindow, openTranslateWindow, prepareTranslateWindow, sendToTranslate } = require('./windows');
 
@@ -136,11 +136,13 @@ app.whenReady().then(async () => {
   registerIpc();
   rebuildTrayMenu();
   prepareTranslateWindow();
+  warmSelectionCapture().catch(() => {});
   registerConfiguredHotkey();
 });
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  stopSelectionCapture().catch(() => {});
 });
 
 app.on('window-all-closed', (event) => {

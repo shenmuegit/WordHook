@@ -3,7 +3,7 @@ const { spawn } = require('node:child_process');
 
 let helper = null;
 let helperReady = null;
-let pendingCopy = null;
+let pendingCommand = null;
 let stdoutBuffer = '';
 
 function delay(ms) {
@@ -22,6 +22,10 @@ using System.Runtime.InteropServices;
 public static class Keyboard {
   [DllImport("user32.dll")]
   public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+  [DllImport("user32.dll")]
+  public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")]
+  public static extern bool SetForegroundWindow(IntPtr hWnd);
 }
 "@
 $KEYEVENTF_KEYUP = 0x0002
@@ -33,7 +37,23 @@ while ($true) {
   $line = [Console]::In.ReadLine()
   if ($null -eq $line) { break }
   if ($line -eq "EXIT") { break }
-  if ($line -ne "COPY") { continue }
+  if ($line -eq "GET_FOREGROUND") {
+    [Console]::Out.WriteLine("HWND " + [Keyboard]::GetForegroundWindow().ToInt64())
+    [Console]::Out.Flush()
+    continue
+  }
+  if ($line.StartsWith("COPY")) {
+    $parts = $line.Split(" ")
+    if ($parts.Length -gt 1) {
+      $hwndValue = 0L
+      if ([Int64]::TryParse($parts[1], [ref]$hwndValue) -and $hwndValue -ne 0) {
+        [Keyboard]::SetForegroundWindow([IntPtr]::new($hwndValue)) | Out-Null
+        Start-Sleep -Milliseconds 30
+      }
+    }
+  } else {
+    continue
+  }
   [Keyboard]::keybd_event($VK_CONTROL, 0, 0, [UIntPtr]::Zero)
   [Keyboard]::keybd_event($VK_C, 0, 0, [UIntPtr]::Zero)
   Start-Sleep -Milliseconds 35
@@ -48,16 +68,23 @@ while ($true) {
 function resetHelper() {
   helper = null;
   helperReady = null;
-  pendingCopy = null;
+  pendingCommand = null;
   stdoutBuffer = '';
 }
 
 function handleHelperLine(line) {
   if (line === 'READY') return;
-  if (line === 'OK' && pendingCopy) {
-    const resolve = pendingCopy;
-    pendingCopy = null;
+  if (!pendingCommand) return;
+  if (pendingCommand.type === 'copy' && line === 'OK') {
+    const { resolve } = pendingCommand;
+    pendingCommand = null;
     resolve();
+    return;
+  }
+  if (pendingCommand.type === 'foreground' && line.startsWith('HWND ')) {
+    const { resolve } = pendingCommand;
+    pendingCommand = null;
+    resolve(line.slice(5).trim());
   }
 }
 
@@ -113,14 +140,55 @@ async function sendCtrlC() {
   }
 
   await new Promise((resolve, reject) => {
-    if (pendingCopy) {
+    if (pendingCommand) {
       reject(new Error('Copy helper is busy'));
       return;
     }
-    pendingCopy = resolve;
+    pendingCommand = { type: 'copy', resolve };
     helper.stdin.write('COPY\n', (error) => {
       if (error) {
-        pendingCopy = null;
+        pendingCommand = null;
+        reject(error);
+      }
+    });
+  });
+}
+
+async function getForegroundWindowHandle() {
+  await ensureHelper();
+
+  return await new Promise((resolve, reject) => {
+    if (pendingCommand) {
+      reject(new Error('Copy helper is busy'));
+      return;
+    }
+    pendingCommand = { type: 'foreground', resolve };
+    helper.stdin.write('GET_FOREGROUND\n', (error) => {
+      if (error) {
+        pendingCommand = null;
+        reject(error);
+      }
+    });
+  });
+}
+
+async function sendCtrlCToWindow(windowHandle) {
+  await ensureHelper();
+
+  if (!helper || helper.killed || helper.stdin.writable === false) {
+    resetHelper();
+    await ensureHelper();
+  }
+
+  await new Promise((resolve, reject) => {
+    if (pendingCommand) {
+      reject(new Error('Copy helper is busy'));
+      return;
+    }
+    pendingCommand = { type: 'copy', resolve };
+    helper.stdin.write(`COPY ${windowHandle || 0}\n`, (error) => {
+      if (error) {
+        pendingCommand = null;
         reject(error);
       }
     });
@@ -152,13 +220,14 @@ async function stopSelectionCapture() {
 async function captureSelectedText() {
   const previousText = clipboard.readText();
   const sentinel = copySentinel();
+  const foregroundWindow = await getForegroundWindowHandle();
 
   try {
     // globalShortcut fires while the trigger keys may still be held.
     // Give Ctrl/Shift/T a moment to release before sending Ctrl+C.
     await delay(120);
     clipboard.writeText(sentinel);
-    await sendCtrlC();
+    await sendCtrlCToWindow(foregroundWindow);
     return await readClipboardAfterCopy(sentinel);
   } finally {
     clipboard.writeText(previousText);
@@ -168,5 +237,6 @@ async function captureSelectedText() {
 module.exports = {
   captureSelectedText,
   warmSelectionCapture,
-  stopSelectionCapture
+  stopSelectionCapture,
+  getForegroundWindowHandle
 };

@@ -35,8 +35,14 @@ function loadSelectionModule() {
               stdin: {
                 write(value) {
                   events.push(['stdin.write', value]);
-                  clipboard.value = 'selected text';
-                  setImmediate(() => child.stdoutHandler(Buffer.from('OK\n')));
+                  if (value === 'GET_FOREGROUND\n') {
+                    setImmediate(() => child.stdoutHandler(Buffer.from('HWND 12345\n')));
+                    return;
+                  }
+                  if (value.startsWith('COPY')) {
+                    clipboard.value = 'selected text';
+                    setImmediate(() => child.stdoutHandler(Buffer.from('OK\n')));
+                  }
                 }
               },
               stdout: {
@@ -81,7 +87,7 @@ test('capture waits for global hotkey release before sending copy', async () => 
   const clearIndex = events.findIndex((event) => (
     event[0] === 'writeText' && /^__WORDHOOK_COPY_SENTINEL__/.test(event[1])
   ));
-  const copyIndex = events.findIndex((event) => event[0] === 'stdin.write');
+  const copyIndex = events.findIndex((event) => event[0] === 'stdin.write' && event[1].startsWith('COPY'));
   const firstDelayIndex = events.findIndex((event) => event[0] === 'delay');
 
   assert(firstDelayIndex >= 0);
@@ -99,7 +105,8 @@ test('selection capture can be warmed and reused without spawning per capture', 
 
   assert.equal(events.filter((event) => event[0] === 'spawn').length, 1);
   assert.equal(events.filter((event) => event[0] === 'execFile').length, 0);
-  assert.equal(events.filter((event) => event[0] === 'stdin.write').length, 2);
+  assert.equal(events.filter((event) => event[0] === 'stdin.write' && event[1] === 'GET_FOREGROUND\n').length, 2);
+  assert.equal(events.filter((event) => event[0] === 'stdin.write' && event[1].startsWith('COPY ')).length, 2);
 });
 
 test('selection capture uses a sentinel so stale clipboard text is not accepted', async () => {
@@ -110,4 +117,13 @@ test('selection capture uses a sentinel so stale clipboard text is not accepted'
   const clearEvent = events.find((event) => event[0] === 'writeText' && event[1] !== 'previous');
   assert(clearEvent);
   assert.match(clearEvent[1], /^__WORDHOOK_COPY_SENTINEL__/);
+});
+
+test('selection capture copies from the foreground window captured at hotkey time', async () => {
+  const { api, events } = loadSelectionModule();
+
+  await api.captureSelectedText();
+
+  assert(events.some((event) => event[0] === 'stdin.write' && event[1] === 'GET_FOREGROUND\n'));
+  assert(events.some((event) => event[0] === 'stdin.write' && event[1] === 'COPY 12345\n'));
 });

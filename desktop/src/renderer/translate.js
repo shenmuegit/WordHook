@@ -11,16 +11,24 @@ ipcRenderer.on('translation:start', (_event, payload) => {
   sourceEl.textContent = currentSource;
   resultEl.textContent = '';
   statusEl.textContent = '生成中...';
+  statusEl.style.color = '#777';
+});
+
+ipcRenderer.on('translation:status', (_event, payload) => {
+  statusEl.textContent = payload.status || '';
+  statusEl.style.color = '#777';
 });
 
 ipcRenderer.on('translation:delta', (_event, payload) => {
   resultEl.textContent = payload.fullText || '';
   statusEl.textContent = '生成中...';
+  statusEl.style.color = '#777';
 });
 
 ipcRenderer.on('translation:done', (_event, payload) => {
   resultEl.textContent = payload.fullText || resultEl.textContent;
   statusEl.textContent = '完成';
+  statusEl.style.color = '#2a8a2a';
 });
 
 ipcRenderer.on('translation:error', (_event, payload) => {
@@ -36,4 +44,8 @@ document.getElementById('copy').addEventListener('click', () => {
 
 document.getElementById('retry').addEventListener('click', () => {
   if (currentSource) ipcRenderer.send('translation:retry', { sourceText: currentSource });
+});
+
+document.getElementById('close').addEventListener('click', () => {
+  window.close();
 });

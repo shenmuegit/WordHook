@@ -36,12 +36,11 @@ function openConfigWindow() {
 function openTranslateWindow(sourceText) {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
-  const winWidth = 480;
-  const winHeight = 520;
+  const winWidth = 360;
+  const winHeight = 260;
 
   if (translateWindow && !translateWindow.isDestroyed()) {
-    translateWindow.show();
-    translateWindow.focus();
+    bringTranslateWindowToFront();
   } else {
     translateWindow = new BrowserWindow({
       width: winWidth,
@@ -49,6 +48,10 @@ function openTranslateWindow(sourceText) {
       x: Math.max(0, width - winWidth - 18),
       y: Math.max(0, height - winHeight - 18),
       title: 'WordHook 翻译',
+      frame: false,
+      resizable: false,
+      skipTaskbar: true,
+      alwaysOnTop: true,
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false
@@ -59,6 +62,8 @@ function openTranslateWindow(sourceText) {
       translateWindow = null;
     });
   }
+
+  bringTranslateWindowToFront();
 
   translateWindow.webContents.once('did-finish-load', () => {
     sendToTranslate('translation:start', { sourceText });
@@ -71,6 +76,15 @@ function openTranslateWindow(sourceText) {
   return translateWindow;
 }
 
+function bringTranslateWindowToFront() {
+  if (!translateWindow || translateWindow.isDestroyed()) return;
+  try { translateWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
+  try { translateWindow.moveTop(); } catch {}
+  try { translateWindow.restore(); } catch {}
+  translateWindow.show();
+  translateWindow.focus();
+}
+
 function sendToTranslate(channel, payload) {
   if (translateWindow && !translateWindow.isDestroyed()) {
     translateWindow.webContents.send(channel, payload);
@@ -80,5 +94,6 @@ function sendToTranslate(channel, payload) {
 module.exports = {
   openConfigWindow,
   openTranslateWindow,
+  bringTranslateWindowToFront,
   sendToTranslate
 };

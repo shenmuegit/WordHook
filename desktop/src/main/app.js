@@ -98,8 +98,11 @@ async function translateText(sourceText) {
 }
 
 async function translateCurrentSelection() {
+  openTranslateWindow('');
+  sendToTranslate('translation:status', { status: '读取选区...' });
+
   const text = await captureSelectedText().catch((error) => {
-    dialog.showErrorBox('WordHook', `读取选中文本失败：${error.message || error}`);
+    sendToTranslate('translation:error', { error: `读取选中文本失败：${error.message || error}` });
     return '';
   });
   await translateText(text);

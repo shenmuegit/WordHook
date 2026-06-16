@@ -11,6 +11,9 @@ Thumbs.db
 *.zip
 dist/
 
+# Desktop dependencies
+desktop/node_modules/
+
 # Local notes / drafts
 NOTES.md
 TODO.md

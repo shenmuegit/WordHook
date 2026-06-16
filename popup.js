@@ -49,15 +49,26 @@ $('save').addEventListener('click', async () => {
     return;
   }
 
-  // 请求 host 权限，让 service worker 能 fetch 这个域名
-  const granted = await chrome.permissions.request({ origins: [origin] });
-  if (!granted) {
-    setStatus('未授权访问该域名，无法调用 API', 'err');
+  const cfg = { baseURL, model, apiKey };
+  try {
+    await chrome.storage.local.set({ [CONFIG_KEY]: cfg });
+  } catch (e) {
+    setStatus('保存失败：' + String(e?.message || e), 'err');
     return;
   }
 
-  await chrome.storage.local.set({ [CONFIG_KEY]: { baseURL, model, apiKey } });
-  setStatus('已保存', 'ok');
+  // 请求 host 权限，让 service worker 能 fetch 这个域名。
+  // 配置必须先落盘：权限弹窗可能关闭 popup，导致后续代码不再执行。
+  try {
+    const granted = await chrome.permissions.request({ origins: [origin] });
+    if (!granted) {
+      setStatus('配置已保存，但未授权访问该域名', 'err');
+      return;
+    }
+    setStatus('已保存', 'ok');
+  } catch (e) {
+    setStatus('配置已保存，但权限请求失败：' + String(e?.message || e), 'err');
+  }
 });
 
 // ——— Anki 卡片管理 ———

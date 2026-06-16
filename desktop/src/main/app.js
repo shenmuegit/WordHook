@@ -1,16 +1,9 @@
-const { app, globalShortcut } = require('electron');
-const { captureSelectedText } = require('./selection');
+const { app } = require('electron');
+const { readConfig, hasApiConfig } = require('./config-store');
 
-app.whenReady().then(() => {
-  const ok = globalShortcut.register('CommandOrControl+Shift+T', async () => {
-    const text = await captureSelectedText();
-    console.log('Captured selection:', text || '<empty>');
-  });
-  console.log('Hotkey registered:', ok);
-});
-
-app.on('will-quit', () => {
-  globalShortcut.unregisterAll();
+app.whenReady().then(async () => {
+  const config = await readConfig();
+  console.log('Has API config:', hasApiConfig(config));
 });
 
 app.on('window-all-closed', (event) => {

@@ -16,7 +16,7 @@ function configPath() {
 
 async function readConfig() {
   try {
-    const raw = await fs.readFile(configPath(), 'utf8');
+    const raw = (await fs.readFile(configPath(), 'utf8')).replace(/^\uFEFF/, '');
     const parsed = JSON.parse(raw);
     return { ...DEFAULT_CONFIG, ...parsed };
   } catch (error) {

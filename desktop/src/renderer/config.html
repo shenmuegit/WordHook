@@ -3,9 +3,19 @@
 <head>
   <meta charset="utf-8">
   <title>WordHook 配置</title>
+  <link rel="stylesheet" href="./config.css">
 </head>
 <body>
-  <h1>WordHook 配置</h1>
+  <main>
+    <h1>WordHook 配置</h1>
+    <label>Base URL<input id="baseURL" placeholder="https://api.openai.com/v1"></label>
+    <label>Model<input id="model" placeholder="gpt-4o-mini"></label>
+    <label>API Key<input id="apiKey" type="password" placeholder="sk-..."></label>
+    <label>快捷键<input id="hotkey" placeholder="CommandOrControl+Shift+T"></label>
+    <label class="check"><input id="hotkeyEnabled" type="checkbox"> 启用快捷键</label>
+    <button id="save">保存</button>
+    <p id="status"></p>
+  </main>
   <script src="./config.js"></script>
 </body>
 </html>

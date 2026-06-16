@@ -3,9 +3,24 @@
 <head>
   <meta charset="utf-8">
   <title>WordHook 翻译</title>
+  <link rel="stylesheet" href="./translate.css">
 </head>
 <body>
-  <h1>WordHook 翻译</h1>
+  <main>
+    <section class="source">
+      <h2>选中文本</h2>
+      <pre id="sourceText"></pre>
+    </section>
+    <section class="result">
+      <h2>结果</h2>
+      <pre id="resultText"></pre>
+    </section>
+    <div class="actions">
+      <button id="copy">复制结果</button>
+      <button id="retry">重新翻译</button>
+    </div>
+    <p id="status"></p>
+  </main>
   <script src="./translate.js"></script>
 </body>
 </html>

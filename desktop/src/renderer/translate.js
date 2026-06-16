@@ -1,15 +1,22 @@
 const { clipboard, ipcRenderer } = require('electron');
+const { renderMarkdown } = require('./markdown');
 
 const sourceEl = document.getElementById('sourceText');
 const resultEl = document.getElementById('resultText');
 const statusEl = document.getElementById('status');
 
 let currentSource = '';
+let currentResult = '';
+
+function setResultText(value) {
+  currentResult = value || '';
+  resultEl.innerHTML = renderMarkdown(currentResult);
+}
 
 ipcRenderer.on('translation:start', (_event, payload) => {
   currentSource = payload.sourceText || '';
   sourceEl.textContent = currentSource;
-  resultEl.textContent = '';
+  setResultText('');
   statusEl.textContent = '生成中...';
   statusEl.style.color = '#777';
 });
@@ -20,13 +27,13 @@ ipcRenderer.on('translation:status', (_event, payload) => {
 });
 
 ipcRenderer.on('translation:delta', (_event, payload) => {
-  resultEl.textContent = payload.fullText || '';
+  setResultText(payload.fullText || '');
   statusEl.textContent = '生成中...';
   statusEl.style.color = '#777';
 });
 
 ipcRenderer.on('translation:done', (_event, payload) => {
-  resultEl.textContent = payload.fullText || resultEl.textContent;
+  setResultText(payload.fullText || currentResult);
   statusEl.textContent = '完成';
   statusEl.style.color = '#2a8a2a';
 });
@@ -37,7 +44,7 @@ ipcRenderer.on('translation:error', (_event, payload) => {
 });
 
 document.getElementById('copy').addEventListener('click', () => {
-  clipboard.writeText(resultEl.textContent || '');
+  clipboard.writeText(resultEl.textContent || currentResult || '');
   statusEl.textContent = '已复制';
   statusEl.style.color = '#2a8a2a';
 });

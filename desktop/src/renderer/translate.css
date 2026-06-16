@@ -28,6 +28,43 @@ pre {
   font: inherit;
 }
 
+.markdown {
+  word-break: break-word;
+}
+
+.markdown p {
+  margin: 0 0 6px;
+}
+
+.markdown ul {
+  margin: 0 0 6px;
+  padding-left: 18px;
+}
+
+.markdown li {
+  margin: 2px 0;
+}
+
+.markdown strong {
+  color: #111;
+}
+
+.markdown code {
+  padding: 1px 4px;
+  border: 1px solid #e5e5e5;
+  border-radius: 3px;
+  background: #fafafa;
+  font: 12px ui-monospace, "Consolas", monospace;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #111;
+}
+
 .source,
 .result {
   border: 1px solid #eee;

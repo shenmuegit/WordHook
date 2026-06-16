@@ -109,6 +109,29 @@ v0。先给自己用，顺手开源。详见 [`实施方案.txt`](实施方案.t
 
 如果你用了一段时间觉得某条限制是真痛点，欢迎提 issue。
 
+## Windows 桌面托盘版（MVP）
+
+桌面版是一个 Electron 托盘应用，不会打开完整客户端窗口。
+
+运行方式：
+
+```powershell
+cd desktop
+npm install
+npm start
+```
+
+启动后在 Windows 右下角托盘中右键 WordHook：
+
+- 配置：填写 Base URL、Model、API Key、快捷键
+- Translate Selection：翻译当前选中文本
+- Enable/Disable Hotkey：启用或停用全局快捷键
+- Exit：退出
+
+默认快捷键是 `Ctrl+Shift+T`。在任意应用中选中文字后按快捷键，会临时复制当前选区、读取文本、恢复原剪贴板，然后弹出翻译结果窗口。
+
+桌面版 MVP 暂不支持自动鼠标划词、OCR、Anki 导出迁移和安装包。
+
 ## 许可
 
 MIT（请自行添加 LICENSE 文件）

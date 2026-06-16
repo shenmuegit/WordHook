@@ -35,47 +35,56 @@ function openConfigWindow() {
 
 function openTranslateWindow(sourceText, options = {}) {
   const shouldFocus = options.focus !== false;
+  const win = ensureTranslateWindow();
+
+  if (shouldFocus) bringTranslateWindowToFront();
+  else showTranslateWindowInactive();
+
+  win.webContents.once('did-finish-load', () => {
+    sendToTranslate('translation:start', { sourceText });
+  });
+
+  if (!win.webContents.isLoading()) {
+    sendToTranslate('translation:start', { sourceText });
+  }
+
+  return win;
+}
+
+function prepareTranslateWindow() {
+  return ensureTranslateWindow();
+}
+
+function ensureTranslateWindow() {
+  if (translateWindow && !translateWindow.isDestroyed()) {
+    return translateWindow;
+  }
+
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
   const winWidth = 360;
   const winHeight = 260;
 
-  if (translateWindow && !translateWindow.isDestroyed()) {
-    if (shouldFocus) bringTranslateWindowToFront();
-    else showTranslateWindowInactive();
-  } else {
-    translateWindow = new BrowserWindow({
-      width: winWidth,
-      height: winHeight,
-      x: Math.max(0, width - winWidth - 18),
-      y: Math.max(0, height - winHeight - 18),
-      title: 'WordHook 翻译',
-      frame: false,
-      resizable: false,
-      skipTaskbar: true,
-      alwaysOnTop: true,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false
-      }
-    });
-    translateWindow.loadFile(rendererPath('translate.html'));
-    translateWindow.on('closed', () => {
-      translateWindow = null;
-    });
-  }
-
-  if (shouldFocus) bringTranslateWindowToFront();
-  else showTranslateWindowInactive();
-
-  translateWindow.webContents.once('did-finish-load', () => {
-    sendToTranslate('translation:start', { sourceText });
+  translateWindow = new BrowserWindow({
+    width: winWidth,
+    height: winHeight,
+    x: Math.max(0, width - winWidth - 18),
+    y: Math.max(0, height - winHeight - 18),
+    title: 'WordHook 翻译',
+    show: false,
+    frame: false,
+    resizable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   });
-
-  if (!translateWindow.webContents.isLoading()) {
-    sendToTranslate('translation:start', { sourceText });
-  }
-
+  translateWindow.loadFile(rendererPath('translate.html'));
+  translateWindow.on('closed', () => {
+    translateWindow = null;
+  });
   return translateWindow;
 }
 
@@ -109,6 +118,7 @@ function sendToTranslate(channel, payload) {
 module.exports = {
   openConfigWindow,
   openTranslateWindow,
+  prepareTranslateWindow,
   bringTranslateWindowToFront,
   showTranslateWindowInactive,
   sendToTranslate

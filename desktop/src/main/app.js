@@ -11,7 +11,7 @@ const {
 const { readConfig, writeConfig, hasApiConfig } = require('./config-store');
 const { captureSelectedText } = require('./selection');
 const { streamChatCompletion } = require('./llm');
-const { openConfigWindow, openTranslateWindow, sendToTranslate } = require('./windows');
+const { openConfigWindow, openTranslateWindow, prepareTranslateWindow, sendToTranslate } = require('./windows');
 
 let tray = null;
 let currentConfig = null;
@@ -135,6 +135,7 @@ app.whenReady().then(async () => {
   tray.setToolTip('WordHook');
   registerIpc();
   rebuildTrayMenu();
+  prepareTranslateWindow();
   registerConfiguredHotkey();
 });
 

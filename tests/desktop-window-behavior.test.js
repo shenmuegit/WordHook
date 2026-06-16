@@ -96,6 +96,7 @@ test('translation window can show immediately without stealing focus before copy
   api.openTranslateWindow('', { focus: false });
 
   assert.equal(createdWindows.length, 1);
+  assert.equal(createdWindows[0].options.show, false);
   assert(createdWindows[0].calls.some((call) => call[0] === 'showInactive'));
   assert(!createdWindows[0].calls.some((call) => call[0] === 'focus'));
 });

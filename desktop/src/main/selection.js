@@ -42,6 +42,9 @@ async function captureSelectedText() {
   const previousText = clipboard.readText();
 
   try {
+    // globalShortcut fires while the trigger keys may still be held.
+    // Give Ctrl/Shift/T a moment to release before sending Ctrl+C.
+    await delay(120);
     clipboard.writeText('');
     await sendCtrlC();
     await delay(180);

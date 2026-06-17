@@ -32,6 +32,12 @@ ipcRenderer.on('translation:hover', (_event, payload) => {
   else hideHoverChrome();
 });
 
+document.querySelector('.drag-strip').addEventListener('mousedown', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  ipcRenderer.send('translation:move-start');
+});
+
 document.querySelectorAll('[data-resize]').forEach((handle) => {
   handle.addEventListener('mousedown', (event) => {
     event.preventDefault();
@@ -41,10 +47,12 @@ document.querySelectorAll('[data-resize]').forEach((handle) => {
 });
 
 window.addEventListener('mouseup', () => {
+  ipcRenderer.send('translation:move-end');
   ipcRenderer.send('translation:resize-end');
 });
 
 window.addEventListener('blur', () => {
+  ipcRenderer.send('translation:move-end');
   ipcRenderer.send('translation:resize-end');
 });
 

@@ -184,3 +184,20 @@ test('translation window west resize preserves minimum width', () => {
     call[1].width === 320
   )));
 });
+
+test('translation window can be moved from the top drag strip', () => {
+  const { api, createdWindows, intervals, setCursorPoint } = loadWindowsModule();
+
+  api.openTranslateWindow('hello');
+  setCursorPoint({ x: 1500, y: 800 });
+  api.beginTranslateMove();
+  setCursorPoint({ x: 1450, y: 850 });
+  intervals[1].handler();
+  api.endTranslateMove();
+
+  assert(createdWindows[0].calls.some((call) => (
+    call[0] === 'setBounds' &&
+    call[1].x === 1432 &&
+    call[1].y === 752
+  )));
+});

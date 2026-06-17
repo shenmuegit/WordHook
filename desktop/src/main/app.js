@@ -12,7 +12,9 @@ const { readConfig, writeConfig, hasApiConfig } = require('./config-store');
 const { captureSelectedText, warmSelectionCapture, stopSelectionCapture } = require('./selection');
 const { streamChatCompletion } = require('./llm');
 const {
+  beginTranslateMove,
   beginTranslateResize,
+  endTranslateMove,
   endTranslateResize,
   openConfigWindow,
   openTranslateWindow,
@@ -139,6 +141,14 @@ function registerIpc() {
 
   ipcMain.on('translation:resize-end', () => {
     endTranslateResize();
+  });
+
+  ipcMain.on('translation:move-start', () => {
+    beginTranslateMove();
+  });
+
+  ipcMain.on('translation:move-end', () => {
+    endTranslateMove();
   });
 }
 

@@ -7,6 +7,8 @@ let hoverPoller = null;
 let lastTranslateHover = null;
 let resizePoller = null;
 let resizeState = null;
+let movePoller = null;
+let moveState = null;
 const MIN_TRANSLATE_WIDTH = 320;
 const MIN_TRANSLATE_HEIGHT = 240;
 
@@ -152,6 +154,38 @@ function endTranslateResize() {
   resizeState = null;
 }
 
+function beginTranslateMove() {
+  if (!translateWindow || translateWindow.isDestroyed()) return;
+  endTranslateMove();
+  moveState = {
+    startPoint: screen.getCursorScreenPoint(),
+    startBounds: translateWindow.getBounds()
+  };
+  movePoller = setInterval(updateTranslateMove, 16);
+}
+
+function endTranslateMove() {
+  if (movePoller) {
+    clearInterval(movePoller);
+    movePoller = null;
+  }
+  moveState = null;
+}
+
+function updateTranslateMove() {
+  if (!moveState || !translateWindow || translateWindow.isDestroyed()) {
+    endTranslateMove();
+    return;
+  }
+
+  const point = screen.getCursorScreenPoint();
+  translateWindow.setBounds({
+    ...moveState.startBounds,
+    x: moveState.startBounds.x + point.x - moveState.startPoint.x,
+    y: moveState.startBounds.y + point.y - moveState.startPoint.y
+  });
+}
+
 function updateTranslateResize() {
   if (!resizeState || !translateWindow || translateWindow.isDestroyed()) {
     endTranslateResize();
@@ -209,7 +243,9 @@ function sendToTranslate(channel, payload) {
 }
 
 module.exports = {
+  beginTranslateMove,
   beginTranslateResize,
+  endTranslateMove,
   endTranslateResize,
   openConfigWindow,
   openTranslateWindow,

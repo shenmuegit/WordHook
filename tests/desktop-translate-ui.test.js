@@ -40,7 +40,12 @@ test('translation UI exposes drag and resize hit areas for a frameless window', 
     assert.match(html, new RegExp(`data-resize="${edge}"`));
   }
   assert.match(css, /\.drag-strip\s*\{[\s\S]*height:\s*28px/);
+  assert.match(css, /\.drag-strip\s*\{[\s\S]*top:\s*10px/);
+  assert.match(css, /\.drag-strip\s*\{[\s\S]*left:\s*24px/);
+  assert.match(css, /\.drag-strip\s*\{[\s\S]*cursor:\s*move/);
   assert.match(css, /\.resize-handle/);
+  assert.match(js, /translation:move-start/);
+  assert.match(js, /translation:move-end/);
   assert.match(js, /translation:resize-start/);
   assert.match(js, /translation:resize-end/);
 });
@@ -64,7 +69,7 @@ test('translation popup is borderless until hovered and remains draggable', () =
   assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*outline-color:\s*rgba\(90,\s*90,\s*96,\s*0\.38\)/);
   assert.match(css, /padding:\s*10px/);
   assert.doesNotMatch(css, /border-left:\s*3px solid/);
-  assert.match(css, /-webkit-app-region:\s*drag/);
+  assert.match(css, /\.drag-strip\s*\{[\s\S]*-webkit-app-region:\s*no-drag/);
   assert.match(css, /-webkit-app-region:\s*no-drag/);
 });
 

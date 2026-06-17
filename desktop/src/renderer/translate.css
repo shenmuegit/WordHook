@@ -16,12 +16,13 @@ body {
 
 .drag-strip {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 10px;
+  left: 24px;
+  right: 24px;
   height: 28px;
-  z-index: 2;
-  -webkit-app-region: drag;
+  z-index: 6;
+  cursor: move;
+  -webkit-app-region: no-drag;
 }
 
 .resize-handle {

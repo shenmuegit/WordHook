@@ -27,7 +27,8 @@ test('translation UI toggles hover chrome from renderer mouse events', () => {
   assert.match(js, /mouseleave/);
   assert.match(js, /classList\.add\('is-hovered'\)/);
   assert.match(js, /classList\.remove\('is-hovered'\)/);
-  assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*filter:\s*drop-shadow/);
+  assert.match(css, /body::before\s*\{[\s\S]*box-shadow:\s*0 12px 30px/);
+  assert.match(css, /body:has\(\.glass-shell\.is-hovered\)::before/);
   assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*box-shadow:\s*inset/);
   assert.match(css, /body:hover\s+\.glass-shell/);
 });
@@ -100,9 +101,9 @@ test('translation popup uses ios-style frosted glass surface', () => {
   assert.match(css, /background:\s*var\(--window-bg,\s*rgba\(255,\s*255,\s*255,\s*0\.72\)\)/);
   assert.match(css, /backdrop-filter:\s*blur\(22px\) saturate\(180%\)/);
   assert.match(css, /-webkit-backdrop-filter:\s*blur\(22px\) saturate\(180%\)/);
-  assert.match(css, /border-radius:\s*14px/);
-  assert.match(css, /clip-path:\s*inset\(0 round 14px\)/);
-  assert.match(css, /filter:\s*drop-shadow\(0 12px 30px/);
+  assert.match(css, /--window-radius:\s*18px/);
+  assert.match(css, /border-radius:\s*var\(--window-radius\)/);
+  assert.match(css, /clip-path:\s*inset\(0 round var\(--window-radius\)\)/);
   assert.match(js, /config:get/);
   assert.match(js, /--window-bg/);
   assert.match(js, /translation:style/);

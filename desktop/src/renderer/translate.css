@@ -4,6 +4,10 @@ body {
   height: 100%;
 }
 
+:root {
+  --window-radius: 18px;
+}
+
 body {
   margin: 0;
   padding: 10px;
@@ -12,6 +16,23 @@ body {
   background: transparent;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 10px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--window-radius);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.24);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+body:hover::before,
+body:has(.glass-shell.is-hovered)::before {
+  opacity: 1;
 }
 
 .drag-strip {
@@ -85,24 +106,24 @@ body {
 }
 
 .glass-shell {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  border-radius: 14px;
-  clip-path: inset(0 round 14px);
+  border-radius: var(--window-radius);
+  clip-path: inset(0 round var(--window-radius));
   outline: 1px solid transparent;
   background: var(--window-bg, rgba(255, 255, 255, 0.72));
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
-  filter: drop-shadow(0 0 0 rgba(0,0,0,0));
-  transition: outline-color 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+  transition: outline-color 120ms ease, box-shadow 120ms ease;
 }
 
 body:hover .glass-shell,
 .glass-shell.is-hovered {
   outline-color: rgba(90, 90, 96, 0.38);
-  filter: drop-shadow(0 12px 30px rgba(0,0,0,0.24));
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.58);
 }
 

@@ -35,6 +35,10 @@ function loadWindowsModule() {
     moveTop() { this.calls.push(['moveTop']); }
     setAlwaysOnTop(value, level) { this.calls.push(['setAlwaysOnTop', value, level]); }
     getBounds() { return { x: this.options.x, y: this.options.y, width: this.options.width, height: this.options.height }; }
+    setBounds(bounds) {
+      this.calls.push(['setBounds', bounds]);
+      this.options = { ...this.options, ...bounds };
+    }
     loadFile(file) { this.calls.push(['loadFile', file]); }
     on(event) { this.calls.push(['on', event]); }
   }
@@ -145,5 +149,38 @@ test('translation window reports hover state from global cursor bounds', () => {
     call[0] === 'webContents.send' &&
     call[1] === 'translation:hover' &&
     call[2].hovered === false
+  )));
+});
+
+test('translation window can be resized from renderer handles', () => {
+  const { api, createdWindows, intervals, setCursorPoint } = loadWindowsModule();
+
+  api.openTranslateWindow('hello');
+  setCursorPoint({ x: 1500, y: 800 });
+  api.beginTranslateResize('se');
+  setCursorPoint({ x: 1540, y: 830 });
+  intervals[1].handler();
+  api.endTranslateResize();
+
+  assert(createdWindows[0].calls.some((call) => (
+    call[0] === 'setBounds' &&
+    call[1].width === 460 &&
+    call[1].height === 390
+  )));
+});
+
+test('translation window west resize preserves minimum width', () => {
+  const { api, createdWindows, intervals, setCursorPoint } = loadWindowsModule();
+
+  api.openTranslateWindow('hello');
+  setCursorPoint({ x: 1500, y: 800 });
+  api.beginTranslateResize('w');
+  setCursorPoint({ x: 1700, y: 800 });
+  intervals[1].handler();
+  api.endTranslateResize();
+
+  assert(createdWindows[0].calls.some((call) => (
+    call[0] === 'setBounds' &&
+    call[1].width === 320
   )));
 });

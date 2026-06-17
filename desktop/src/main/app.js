@@ -11,7 +11,14 @@ const {
 const { readConfig, writeConfig, hasApiConfig } = require('./config-store');
 const { captureSelectedText, warmSelectionCapture, stopSelectionCapture } = require('./selection');
 const { streamChatCompletion } = require('./llm');
-const { openConfigWindow, openTranslateWindow, prepareTranslateWindow, sendToTranslate } = require('./windows');
+const {
+  beginTranslateResize,
+  endTranslateResize,
+  openConfigWindow,
+  openTranslateWindow,
+  prepareTranslateWindow,
+  sendToTranslate
+} = require('./windows');
 
 let tray = null;
 let currentConfig = null;
@@ -124,6 +131,14 @@ function registerIpc() {
 
   ipcMain.on('translation:retry', (_event, payload) => {
     translateText(payload?.sourceText || '');
+  });
+
+  ipcMain.on('translation:resize-start', (_event, payload) => {
+    beginTranslateResize(payload?.edge);
+  });
+
+  ipcMain.on('translation:resize-end', () => {
+    endTranslateResize();
   });
 }
 

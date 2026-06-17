@@ -5,6 +5,10 @@ let configWindow = null;
 let translateWindow = null;
 let hoverPoller = null;
 let lastTranslateHover = null;
+let resizePoller = null;
+let resizeState = null;
+const MIN_TRANSLATE_WIDTH = 320;
+const MIN_TRANSLATE_HEIGHT = 240;
 
 function rendererPath(file) {
   return path.join(__dirname, '..', 'renderer', file);
@@ -78,8 +82,8 @@ function ensureTranslateWindow() {
     transparent: true,
     backgroundColor: '#00000000',
     resizable: true,
-    minWidth: 320,
-    minHeight: 240,
+    minWidth: MIN_TRANSLATE_WIDTH,
+    minHeight: MIN_TRANSLATE_HEIGHT,
     skipTaskbar: true,
     alwaysOnTop: true,
     webPreferences: {
@@ -125,6 +129,60 @@ function stopTranslateHoverPolling() {
   }
 }
 
+function beginTranslateResize(edge) {
+  if (!translateWindow || translateWindow.isDestroyed()) return;
+  endTranslateResize();
+  const normalizedEdge = String(edge || '').toLowerCase();
+  if (!/^(n|e|s|w|ne|nw|se|sw)$/.test(normalizedEdge)) return;
+
+  resizeState = {
+    edge: normalizedEdge,
+    startPoint: screen.getCursorScreenPoint(),
+    startBounds: translateWindow.getBounds()
+  };
+
+  resizePoller = setInterval(updateTranslateResize, 16);
+}
+
+function endTranslateResize() {
+  if (resizePoller) {
+    clearInterval(resizePoller);
+    resizePoller = null;
+  }
+  resizeState = null;
+}
+
+function updateTranslateResize() {
+  if (!resizeState || !translateWindow || translateWindow.isDestroyed()) {
+    endTranslateResize();
+    return;
+  }
+
+  const point = screen.getCursorScreenPoint();
+  const dx = point.x - resizeState.startPoint.x;
+  const dy = point.y - resizeState.startPoint.y;
+  const edge = resizeState.edge;
+  const start = resizeState.startBounds;
+  const next = { ...start };
+
+  if (edge.includes('e')) {
+    next.width = Math.max(MIN_TRANSLATE_WIDTH, start.width + dx);
+  }
+  if (edge.includes('s')) {
+    next.height = Math.max(MIN_TRANSLATE_HEIGHT, start.height + dy);
+  }
+  if (edge.includes('w')) {
+    next.width = Math.max(MIN_TRANSLATE_WIDTH, start.width - dx);
+    next.x = start.x + (start.width - next.width);
+  }
+  if (edge.includes('n')) {
+    next.height = Math.max(MIN_TRANSLATE_HEIGHT, start.height - dy);
+    next.y = start.y + (start.height - next.height);
+  }
+
+  translateWindow.setBounds(next);
+}
+
 function showTranslateWindowInactive() {
   if (!translateWindow || translateWindow.isDestroyed()) return;
   try { translateWindow.setAlwaysOnTop(true, 'screen-saver'); } catch {}
@@ -151,6 +209,8 @@ function sendToTranslate(channel, payload) {
 }
 
 module.exports = {
+  beginTranslateResize,
+  endTranslateResize,
   openConfigWindow,
   openTranslateWindow,
   prepareTranslateWindow,

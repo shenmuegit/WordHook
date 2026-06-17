@@ -31,6 +31,20 @@ test('translation UI toggles hover chrome from renderer mouse events', () => {
   assert.match(css, /body:hover\s+\.glass-shell/);
 });
 
+test('translation UI exposes drag and resize hit areas for a frameless window', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.html'), 'utf8');
+  const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
+  const js = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.js'), 'utf8');
+
+  for (const edge of ['n', 'e', 's', 'w', 'ne', 'se', 'sw', 'nw']) {
+    assert.match(html, new RegExp(`data-resize="${edge}"`));
+  }
+  assert.match(css, /\.drag-strip\s*\{[\s\S]*height:\s*28px/);
+  assert.match(css, /\.resize-handle/);
+  assert.match(js, /translation:resize-start/);
+  assert.match(js, /translation:resize-end/);
+});
+
 test('translation UI hides scrollbars while retaining internal overflow', () => {
   const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
 

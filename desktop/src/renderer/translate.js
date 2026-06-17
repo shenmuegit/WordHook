@@ -32,6 +32,22 @@ ipcRenderer.on('translation:hover', (_event, payload) => {
   else hideHoverChrome();
 });
 
+document.querySelectorAll('[data-resize]').forEach((handle) => {
+  handle.addEventListener('mousedown', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    ipcRenderer.send('translation:resize-start', { edge: handle.dataset.resize });
+  });
+});
+
+window.addEventListener('mouseup', () => {
+  ipcRenderer.send('translation:resize-end');
+});
+
+window.addEventListener('blur', () => {
+  ipcRenderer.send('translation:resize-end');
+});
+
 ipcRenderer.on('translation:start', (_event, payload) => {
   currentSource = payload.sourceText || '';
   sourceEl.textContent = currentSource;

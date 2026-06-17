@@ -128,8 +128,8 @@ function extractPartialAnalysis(buf) {
   return data;
 }
 
-function markdownLine(label, value) {
-  return value ? `#### ${label}\n${String(value).trim()}` : '';
+function emphasizedQuoteLine(label, value) {
+  return value ? `#### ${label}\n> **${String(value).trim()}**` : '';
 }
 
 function wordCard(w) {
@@ -152,12 +152,9 @@ function formatAnalysisMarkdown(data, fallbackMode) {
   const parts = [];
 
   if (mode === 'sentence') {
-    parts.push(markdownLine('翻译', data.translation_cn));
-    parts.push(markdownLine('直译', data.literal_cn));
-    parts.push(markdownLine('句式', data.structure_cn));
+    parts.push(emphasizedQuoteLine('翻译', data.translation_cn));
   } else if (mode === 'zh_sentence') {
-    parts.push(markdownLine('翻译', data.english));
-    parts.push(markdownLine('句式', data.structure_cn));
+    parts.push(emphasizedQuoteLine('翻译', data.english));
   }
 
   if (Array.isArray(data?.grammar_cn) && data.grammar_cn.length) {

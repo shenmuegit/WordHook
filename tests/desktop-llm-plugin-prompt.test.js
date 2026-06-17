@@ -29,15 +29,15 @@ test('desktop and extension use one shared prompt source', () => {
   assert.doesNotMatch(extension, /function userPrompt/);
 });
 
-test('shared llm prompt preserves extension sentence fields', () => {
+test('shared llm prompt keeps sentence output compact', () => {
   const prompt = userPrompt('sentence', 'It works, but it is slow.');
   const zhPrompt = userPrompt('zh_sentence', '这个功能很慢。');
 
   assert.match(SYSTEM_PROMPT, /严格按用户给定的 JSON 结构返回/);
   assert.match(prompt, /"translation_cn"/);
-  assert.match(prompt, /"literal_cn"/);
-  assert.match(prompt, /"structure_cn"/);
-  assert.match(zhPrompt, /"structure_cn"/);
+  assert.doesNotMatch(prompt, /"literal_cn"/);
+  assert.doesNotMatch(prompt, /"structure_cn"/);
+  assert.doesNotMatch(zhPrompt, /"structure_cn"/);
   assert.match(prompt, /只挑 2–3 个最关键的词/);
 });
 
@@ -48,7 +48,7 @@ test('desktop detects word and sentence modes like the extension', () => {
   assert.equal(detectMode('这个功能很慢。'), 'zh_sentence');
 });
 
-test('desktop formats structured sentence analysis like the extension layout', () => {
+test('desktop formats translation as a bold quote without literal or structure rows', () => {
   const markdown = formatAnalysisMarkdown({
     mode: 'sentence',
     translation_cn: '它能工作，但是很慢。',
@@ -68,11 +68,11 @@ test('desktop formats structured sentence analysis like the extension layout', (
   });
 
   assert.match(markdown, /#### 翻译/);
-  assert.match(markdown, /它能工作，但是很慢。/);
-  assert.match(markdown, /#### 直译/);
-  assert.match(markdown, /它·工作·但是·它·很慢/);
-  assert.match(markdown, /#### 句式/);
-  assert.match(markdown, /前半句说功能可用/);
+  assert.match(markdown, /> \*\*它能工作，但是很慢。\*\*/);
+  assert.doesNotMatch(markdown, /#### 直译/);
+  assert.doesNotMatch(markdown, /它·工作·但是·它·很慢/);
+  assert.doesNotMatch(markdown, /#### 句式/);
+  assert.doesNotMatch(markdown, /前半句说功能可用/);
   assert.match(markdown, /#### 语法/);
   assert.match(markdown, /- but 表示转折/);
   assert.match(markdown, /#### 重点词/);

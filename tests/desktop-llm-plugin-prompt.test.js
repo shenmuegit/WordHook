@@ -29,13 +29,15 @@ test('desktop and extension use one shared prompt source', () => {
   assert.doesNotMatch(extension, /function userPrompt/);
 });
 
-test('desktop llm prompt keeps translation output compact', () => {
+test('shared llm prompt preserves extension sentence fields', () => {
   const prompt = userPrompt('sentence', 'It works, but it is slow.');
+  const zhPrompt = userPrompt('zh_sentence', '这个功能很慢。');
 
   assert.match(SYSTEM_PROMPT, /严格按用户给定的 JSON 结构返回/);
   assert.match(prompt, /"translation_cn"/);
-  assert.doesNotMatch(prompt, /"literal_cn"/);
-  assert.doesNotMatch(prompt, /"structure_cn"/);
+  assert.match(prompt, /"literal_cn"/);
+  assert.match(prompt, /"structure_cn"/);
+  assert.match(zhPrompt, /"structure_cn"/);
   assert.match(prompt, /只挑 2–3 个最关键的词/);
 });
 

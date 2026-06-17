@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="WordHook">
+  <defs>
+    <linearGradient id="bg" x1="42" y1="22" x2="218" y2="236" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff8a1f"/>
+      <stop offset="1" stop-color="#f04f12"/>
+    </linearGradient>
+    <filter id="softShadow" x="-12%" y="-12%" width="124%" height="128%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#8a2400" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <rect x="20" y="20" width="216" height="216" rx="52" fill="url(#bg)" filter="url(#softShadow)"/>
+  <path d="M68 80l28 96 31-78 31 78 30-96" fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M170 88c28 0 47 19 47 44 0 30-24 48-57 48h-13" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="193" cy="132" r="10" fill="#fff"/>
+</svg>

@@ -7,6 +7,7 @@ const {
   ipcMain,
   dialog
 } = require('electron');
+const path = require('node:path');
 
 const { readConfig, writeConfig, hasApiConfig } = require('./config-store');
 const { captureSelectedText, warmSelectionCapture, stopSelectionCapture } = require('./selection');
@@ -27,8 +28,12 @@ let tray = null;
 let currentConfig = null;
 let hotkeyRegistered = false;
 let hideHotkeyRegistered = false;
+const APP_ICON_PATH = path.join(__dirname, '..', '..', '..', 'assets', 'icons', 'wordhook.ico');
 
 function createTrayImage() {
+  const icon = nativeImage.createFromPath(APP_ICON_PATH);
+  if (!icon.isEmpty()) return icon;
+
   return nativeImage.createFromDataURL(
     'data:image/svg+xml;utf8,' +
     encodeURIComponent(`

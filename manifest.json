@@ -5,6 +5,12 @@
   "description": "Select English to learn: LLM-grade explanations, TTS, one-click Anki export.",
   "permissions": ["storage"],
   "optional_host_permissions": ["https://*/*"],
+  "icons": {
+    "16": "assets/icons/wordhook-16.png",
+    "32": "assets/icons/wordhook-32.png",
+    "48": "assets/icons/wordhook-48.png",
+    "128": "assets/icons/wordhook-128.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -17,6 +23,12 @@
   ],
   "action": {
     "default_title": "WordHook",
+    "default_icon": {
+      "16": "assets/icons/wordhook-16.png",
+      "32": "assets/icons/wordhook-32.png",
+      "48": "assets/icons/wordhook-48.png",
+      "128": "assets/icons/wordhook-128.png"
+    },
     "default_popup": "popup.html"
   }
 }

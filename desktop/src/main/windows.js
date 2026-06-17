@@ -11,6 +11,7 @@ let movePoller = null;
 let moveState = null;
 const MIN_TRANSLATE_WIDTH = 320;
 const MIN_TRANSLATE_HEIGHT = 240;
+const APP_ICON_PATH = path.join(__dirname, '..', '..', '..', 'assets', 'icons', 'wordhook.ico');
 
 function rendererPath(file) {
   return path.join(__dirname, '..', 'renderer', file);
@@ -28,6 +29,7 @@ function openConfigWindow() {
     height: 560,
     resizable: false,
     title: 'WordHook 配置',
+    icon: APP_ICON_PATH,
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
@@ -97,6 +99,7 @@ function ensureTranslateWindow() {
     minHeight: MIN_TRANSLATE_HEIGHT,
     skipTaskbar: true,
     alwaysOnTop: true,
+    icon: APP_ICON_PATH,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false

@@ -9,8 +9,10 @@ test('translation UI omits copy and retry controls', () => {
 
   assert.doesNotMatch(html, /id="copy"/);
   assert.doesNotMatch(html, /id="retry"/);
+  assert.doesNotMatch(html, /id="status"/);
   assert.doesNotMatch(js, /translation:retry/);
   assert.doesNotMatch(js, /clipboard/);
+  assert.doesNotMatch(js, /完成/);
 });
 
 test('translation UI hides scrollbars while retaining internal overflow', () => {
@@ -19,4 +21,15 @@ test('translation UI hides scrollbars while retaining internal overflow', () => 
   assert.match(css, /\.result\s*\{[\s\S]*overflow:\s*auto;/);
   assert.match(css, /::-webkit-scrollbar/);
   assert.match(css, /scrollbar-width:\s*none/);
+});
+
+test('translation popup is borderless until hovered and remains draggable', () => {
+  const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
+  const html = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.html'), 'utf8');
+
+  assert.match(html, /class="drag-strip"/);
+  assert.match(css, /border:\s*1px solid transparent/);
+  assert.match(css, /body:hover\s*\{[\s\S]*border-color:\s*#ddd/);
+  assert.match(css, /-webkit-app-region:\s*drag/);
+  assert.match(css, /-webkit-app-region:\s*no-drag/);
 });

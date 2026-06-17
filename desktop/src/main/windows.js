@@ -72,11 +72,11 @@ function ensureTranslateWindow() {
     y: Math.max(0, height - winHeight - 18),
     title: 'WordHook 翻译',
     show: false,
-    frame: true,
+    frame: false,
     resizable: true,
     minWidth: 320,
     minHeight: 240,
-    skipTaskbar: false,
+    skipTaskbar: true,
     alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: true,

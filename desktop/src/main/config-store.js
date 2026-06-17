@@ -7,7 +7,9 @@ const DEFAULT_CONFIG = {
   model: '',
   apiKey: '',
   hotkey: 'CommandOrControl+Shift+T',
-  hotkeyEnabled: true
+  hotkeyEnabled: true,
+  hideHotkey: 'CommandOrControl+Shift+H',
+  hideHotkeyEnabled: true
 };
 
 function configPath() {

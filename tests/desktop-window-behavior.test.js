@@ -30,6 +30,7 @@ function loadWindowsModule() {
     isDestroyed() { return this.destroyed; }
     show() { this.calls.push(['show']); }
     showInactive() { this.calls.push(['showInactive']); }
+    hide() { this.calls.push(['hide']); }
     focus() { this.calls.push(['focus']); }
     restore() { this.calls.push(['restore']); }
     moveTop() { this.calls.push(['moveTop']); }
@@ -200,4 +201,16 @@ test('translation window can be moved from the top drag strip', () => {
     call[1].x === 1432 &&
     call[1].y === 752
   )));
+});
+
+test('hiding translation window preserves the existing window for next show', () => {
+  const { api, createdWindows } = loadWindowsModule();
+
+  api.openTranslateWindow('first');
+  api.hideTranslateWindow();
+  api.openTranslateWindow('second');
+
+  assert.equal(createdWindows.length, 1);
+  assert(createdWindows[0].calls.some((call) => call[0] === 'hide'));
+  assert(createdWindows[0].calls.some((call) => call[0] === 'show'));
 });

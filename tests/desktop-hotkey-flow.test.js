@@ -17,3 +17,11 @@ test('hotkey flow captures selection before showing translation window', () => {
   assert(openIndex >= 0, 'openTranslateWindow not found in hotkey flow');
   assert(captureIndex < openIndex, 'selection must be captured before any translation window is shown');
 });
+
+test('hide hotkey is registered to the same hide action as the minimize button', () => {
+  const source = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'main', 'app.js'), 'utf8');
+
+  assert.match(source, /hideHotkey/);
+  assert.match(source, /globalShortcut\.register\(currentConfig\.hideHotkey,\s*hideTranslateWindow\)/);
+  assert.match(source, /ipcMain\.on\('translation:hide'[\s\S]*hideTranslateWindow\(\)/);
+});

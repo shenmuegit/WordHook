@@ -4,6 +4,7 @@ const { renderMarkdown } = require('./markdown');
 const sourceEl = document.getElementById('sourceText');
 const resultEl = document.getElementById('resultText');
 const glassShell = document.querySelector('.glass-shell');
+const hideWindowButton = document.getElementById('hideWindow');
 
 let currentSource = '';
 let currentResult = '';
@@ -30,6 +31,10 @@ document.addEventListener('mouseleave', hideHoverChrome);
 ipcRenderer.on('translation:hover', (_event, payload) => {
   if (payload.hovered) showHoverChrome();
   else hideHoverChrome();
+});
+
+hideWindowButton.addEventListener('click', () => {
+  ipcRenderer.send('translation:hide');
 });
 
 document.querySelector('.drag-strip').addEventListener('mousedown', (event) => {

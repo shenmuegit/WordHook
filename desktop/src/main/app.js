@@ -16,6 +16,7 @@ const {
   beginTranslateResize,
   endTranslateMove,
   endTranslateResize,
+  hideTranslateWindow,
   openConfigWindow,
   openTranslateWindow,
   prepareTranslateWindow,
@@ -25,6 +26,7 @@ const {
 let tray = null;
 let currentConfig = null;
 let hotkeyRegistered = false;
+let hideHotkeyRegistered = false;
 
 function createTrayImage() {
   return nativeImage.createFromDataURL(
@@ -39,7 +41,7 @@ function createTrayImage() {
 }
 
 function rebuildTrayMenu() {
-  const label = hotkeyRegistered ? 'Disable Hotkey' : 'Enable Hotkey';
+  const label = hotkeyRegistered ? 'Disable Translate Hotkey' : 'Enable Translate Hotkey';
   const menu = Menu.buildFromTemplate([
     { label: 'Translate Selection', click: translateCurrentSelection },
     { label: 'Configuration', click: openConfigWindow },
@@ -54,18 +56,23 @@ function rebuildTrayMenu() {
 function registerConfiguredHotkey() {
   globalShortcut.unregisterAll();
   hotkeyRegistered = false;
+  hideHotkeyRegistered = false;
 
-  if (!currentConfig?.hotkeyEnabled) {
-    rebuildTrayMenu();
-    return;
+  if (currentConfig?.hotkeyEnabled) {
+    hotkeyRegistered = globalShortcut.register(currentConfig.hotkey, translateCurrentSelection);
+    if (!hotkeyRegistered) {
+      dialog.showErrorBox('WordHook', `翻译快捷键注册失败：${currentConfig.hotkey}`);
+    }
   }
 
-  hotkeyRegistered = globalShortcut.register(currentConfig.hotkey, translateCurrentSelection);
+  if (currentConfig?.hideHotkeyEnabled) {
+    hideHotkeyRegistered = globalShortcut.register(currentConfig.hideHotkey, hideTranslateWindow);
+    if (!hideHotkeyRegistered) {
+      dialog.showErrorBox('WordHook', `隐藏快捷键注册失败：${currentConfig.hideHotkey}`);
+    }
+  }
+
   rebuildTrayMenu();
-
-  if (!hotkeyRegistered) {
-    dialog.showErrorBox('WordHook', `快捷键注册失败：${currentConfig.hotkey}`);
-  }
 }
 
 async function toggleHotkey() {
@@ -125,7 +132,7 @@ function registerIpc() {
     try {
       currentConfig = await writeConfig(nextConfig);
       registerConfiguredHotkey();
-      return { ok: true, config: currentConfig, hotkeyRegistered };
+      return { ok: true, config: currentConfig, hotkeyRegistered, hideHotkeyRegistered };
     } catch (error) {
       return { ok: false, error: String(error?.message || error) };
     }
@@ -149,6 +156,10 @@ function registerIpc() {
 
   ipcMain.on('translation:move-end', () => {
     endTranslateMove();
+  });
+
+  ipcMain.on('translation:hide', () => {
+    hideTranslateWindow();
   });
 }
 

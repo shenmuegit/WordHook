@@ -50,6 +50,17 @@ test('translation UI exposes drag and resize hit areas for a frameless window', 
   assert.match(js, /translation:resize-end/);
 });
 
+test('translation UI shows a hover-only minimize button that hides the window', () => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.html'), 'utf8');
+  const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
+  const js = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.js'), 'utf8');
+
+  assert.match(html, /id="hideWindow"/);
+  assert.match(css, /#hideWindow\s*\{[\s\S]*opacity:\s*0/);
+  assert.match(css, /\.glass-shell\.is-hovered\s+#hideWindow/);
+  assert.match(js, /translation:hide/);
+});
+
 test('translation UI hides scrollbars while retaining internal overflow', () => {
   const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
 

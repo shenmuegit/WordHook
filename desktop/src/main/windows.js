@@ -25,7 +25,7 @@ function openConfigWindow() {
 
   configWindow = new BrowserWindow({
     width: 420,
-    height: 430,
+    height: 500,
     resizable: false,
     title: 'WordHook 配置',
     webPreferences: {
@@ -61,6 +61,13 @@ function openTranslateWindow(sourceText, options = {}) {
 
 function prepareTranslateWindow() {
   return ensureTranslateWindow();
+}
+
+function hideTranslateWindow() {
+  if (!translateWindow || translateWindow.isDestroyed()) return;
+  endTranslateMove();
+  endTranslateResize();
+  translateWindow.hide();
 }
 
 function ensureTranslateWindow() {
@@ -247,6 +254,7 @@ module.exports = {
   beginTranslateResize,
   endTranslateMove,
   endTranslateResize,
+  hideTranslateWindow,
   openConfigWindow,
   openTranslateWindow,
   prepareTranslateWindow,

@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 
 const {
@@ -7,6 +9,25 @@ const {
   formatAnalysisMarkdown,
   userPrompt
 } = require('../desktop/src/main/llm');
+const sharedPrompt = require('../shared/prompt');
+
+test('desktop and extension use one shared prompt source', () => {
+  const root = process.cwd();
+  const desktop = fs.readFileSync(path.join(root, 'desktop', 'src', 'main', 'llm.js'), 'utf8');
+  const extension = fs.readFileSync(path.join(root, 'background.js'), 'utf8');
+  const shared = fs.readFileSync(path.join(root, 'shared', 'prompt.js'), 'utf8');
+
+  assert.equal(SYSTEM_PROMPT, sharedPrompt.SYSTEM_PROMPT);
+  assert.equal(userPrompt('sentence', 'It works.'), sharedPrompt.userPrompt('sentence', 'It works.'));
+  assert.match(desktop, /require\('\.\.\/\.\.\/\.\.\/shared\/prompt'\)/);
+  assert.match(extension, /importScripts\('shared\/prompt\.js'\)/);
+  assert.match(shared, /const SYSTEM_PROMPT/);
+  assert.match(shared, /function userPrompt/);
+  assert.doesNotMatch(desktop, /const SYSTEM_PROMPT\s*=/);
+  assert.doesNotMatch(desktop, /function userPrompt/);
+  assert.doesNotMatch(extension, /const SYSTEM_PROMPT\s*=/);
+  assert.doesNotMatch(extension, /function userPrompt/);
+});
 
 test('desktop llm prompt keeps translation output compact', () => {
   const prompt = userPrompt('sentence', 'It works, but it is slow.');

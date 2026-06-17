@@ -58,6 +58,11 @@ test('translation UI shows a hover-only minimize button that hides the window', 
   assert.match(html, /id="hideWindow"/);
   assert.match(css, /#hideWindow\s*\{[\s\S]*opacity:\s*0/);
   assert.match(css, /\.glass-shell\.is-hovered\s+#hideWindow/);
+  assert.match(css, /width:\s*12px/);
+  assert.match(css, /height:\s*12px/);
+  assert.match(css, /background:\s*#ffbd2e/);
+  assert.match(css, /#hideWindow::before/);
+  assert.match(css, /#hideWindow:hover::before/);
   assert.match(js, /translation:hide/);
 });
 

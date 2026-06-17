@@ -3,6 +3,7 @@ const { renderMarkdown } = require('./markdown');
 
 const sourceEl = document.getElementById('sourceText');
 const resultEl = document.getElementById('resultText');
+const glassShell = document.querySelector('.glass-shell');
 
 let currentSource = '';
 let currentResult = '';
@@ -11,6 +12,14 @@ function setResultText(value) {
   currentResult = value || '';
   resultEl.innerHTML = renderMarkdown(currentResult);
 }
+
+window.addEventListener('mouseenter', () => {
+  glassShell.classList.add('is-hovered');
+});
+
+window.addEventListener('mouseleave', () => {
+  glassShell.classList.remove('is-hovered');
+});
 
 ipcRenderer.on('translation:start', (_event, payload) => {
   currentSource = payload.sourceText || '';

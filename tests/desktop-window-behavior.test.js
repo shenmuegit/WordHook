@@ -6,6 +6,8 @@ const vm = require('node:vm');
 
 function loadWindowsModule() {
   const createdWindows = [];
+  const intervals = [];
+  let cursorPoint = { x: 0, y: 0 };
 
   class FakeBrowserWindow {
     constructor(options) {
@@ -32,6 +34,7 @@ function loadWindowsModule() {
     restore() { this.calls.push(['restore']); }
     moveTop() { this.calls.push(['moveTop']); }
     setAlwaysOnTop(value, level) { this.calls.push(['setAlwaysOnTop', value, level]); }
+    getBounds() { return { x: this.options.x, y: this.options.y, width: this.options.width, height: this.options.height }; }
     loadFile(file) { this.calls.push(['loadFile', file]); }
     on(event) { this.calls.push(['on', event]); }
   }
@@ -39,12 +42,18 @@ function loadWindowsModule() {
   const context = {
     __dirname: path.join(process.cwd(), 'desktop', 'src', 'main'),
     module: { exports: {} },
+    setInterval: (handler, delay) => {
+      intervals.push({ handler, delay });
+      return intervals.length;
+    },
+    clearInterval: () => {},
     require: (name) => {
       if (name === 'node:path') return require('node:path');
       if (name === 'electron') {
         return {
           BrowserWindow: FakeBrowserWindow,
           screen: {
+            getCursorScreenPoint: () => cursorPoint,
             getPrimaryDisplay: () => ({
               workAreaSize: { width: 1920, height: 1080 }
             })
@@ -59,7 +68,14 @@ function loadWindowsModule() {
   const source = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'main', 'windows.js'), 'utf8');
   vm.runInNewContext(source, context, { filename: 'windows.js' });
 
-  return { api: context.module.exports, createdWindows };
+  return {
+    api: context.module.exports,
+    createdWindows,
+    intervals,
+    setCursorPoint: (point) => {
+      cursorPoint = point;
+    }
+  };
 }
 
 test('translation window is resizable and foreground-oriented', () => {
@@ -104,4 +120,30 @@ test('translation window can show immediately without stealing focus before copy
   assert(!createdWindows[0].calls.some((call) => call[0] === 'focus'));
   assert(!createdWindows[0].calls.some((call) => call[0] === 'restore'));
   assert(!createdWindows[0].calls.some((call) => call[0] === 'moveTop'));
+});
+
+test('translation window reports hover state from global cursor bounds', () => {
+  const { api, createdWindows, intervals, setCursorPoint } = loadWindowsModule();
+
+  api.openTranslateWindow('hello');
+
+  assert.equal(intervals.length, 1);
+  assert.equal(intervals[0].delay, 80);
+
+  setCursorPoint({ x: 1510, y: 800 });
+  intervals[0].handler();
+
+  setCursorPoint({ x: 20, y: 20 });
+  intervals[0].handler();
+
+  assert(createdWindows[0].calls.some((call) => (
+    call[0] === 'webContents.send' &&
+    call[1] === 'translation:hover' &&
+    call[2].hovered === true
+  )));
+  assert(createdWindows[0].calls.some((call) => (
+    call[0] === 'webContents.send' &&
+    call[1] === 'translation:hover' &&
+    call[2].hovered === false
+  )));
 });

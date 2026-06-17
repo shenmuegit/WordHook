@@ -3,6 +3,8 @@ const { BrowserWindow, screen } = require('electron');
 
 let configWindow = null;
 let translateWindow = null;
+let hoverPoller = null;
+let lastTranslateHover = null;
 
 function rendererPath(file) {
   return path.join(__dirname, '..', 'renderer', file);
@@ -86,10 +88,41 @@ function ensureTranslateWindow() {
     }
   });
   translateWindow.loadFile(rendererPath('translate.html'));
+  startTranslateHoverPolling();
   translateWindow.on('closed', () => {
+    stopTranslateHoverPolling();
     translateWindow = null;
   });
   return translateWindow;
+}
+
+function startTranslateHoverPolling() {
+  stopTranslateHoverPolling();
+  lastTranslateHover = null;
+  hoverPoller = setInterval(() => {
+    if (!translateWindow || translateWindow.isDestroyed()) {
+      stopTranslateHoverPolling();
+      return;
+    }
+    const point = screen.getCursorScreenPoint();
+    const bounds = translateWindow.getBounds();
+    const hovered = (
+      point.x >= bounds.x &&
+      point.x <= bounds.x + bounds.width &&
+      point.y >= bounds.y &&
+      point.y <= bounds.y + bounds.height
+    );
+    if (hovered === lastTranslateHover) return;
+    lastTranslateHover = hovered;
+    sendToTranslate('translation:hover', { hovered });
+  }, 80);
+}
+
+function stopTranslateHoverPolling() {
+  if (hoverPoller) {
+    clearInterval(hoverPoller);
+    hoverPoller = null;
+  }
 }
 
 function showTranslateWindowInactive() {

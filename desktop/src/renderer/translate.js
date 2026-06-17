@@ -13,12 +13,23 @@ function setResultText(value) {
   resultEl.innerHTML = renderMarkdown(currentResult);
 }
 
-window.addEventListener('mouseenter', () => {
+function showHoverChrome() {
   glassShell.classList.add('is-hovered');
-});
+}
 
-window.addEventListener('mouseleave', () => {
+function hideHoverChrome() {
   glassShell.classList.remove('is-hovered');
+}
+
+window.addEventListener('mouseenter', showHoverChrome);
+window.addEventListener('mousemove', showHoverChrome);
+window.addEventListener('pointerover', showHoverChrome);
+document.addEventListener('mouseover', showHoverChrome);
+document.addEventListener('mouseleave', hideHoverChrome);
+
+ipcRenderer.on('translation:hover', (_event, payload) => {
+  if (payload.hovered) showHoverChrome();
+  else hideHoverChrome();
 });
 
 ipcRenderer.on('translation:start', (_event, payload) => {

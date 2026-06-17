@@ -21,10 +21,14 @@ test('translation UI toggles hover chrome from renderer mouse events', () => {
 
   assert.match(js, /querySelector\('\.glass-shell'\)/);
   assert.match(js, /mouseenter/);
+  assert.match(js, /mousemove/);
+  assert.match(js, /pointerover/);
+  assert.match(js, /mouseover/);
   assert.match(js, /mouseleave/);
   assert.match(js, /classList\.add\('is-hovered'\)/);
   assert.match(js, /classList\.remove\('is-hovered'\)/);
   assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*box-shadow:/);
+  assert.match(css, /body:hover\s+\.glass-shell/);
 });
 
 test('translation UI hides scrollbars while retaining internal overflow', () => {
@@ -43,7 +47,7 @@ test('translation popup is borderless until hovered and remains draggable', () =
   assert.match(html, /class="glass-shell"/);
   assert.doesNotMatch(css, /body\s*\{[^}]*\bborder\s*:/);
   assert.match(css, /\.glass-shell\s*\{[\s\S]*outline:\s*1px solid transparent/);
-  assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*outline-color:\s*rgba\(90,\s*90,\s*96,\s*0\.28\)/);
+  assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*outline-color:\s*rgba\(90,\s*90,\s*96,\s*0\.38\)/);
   assert.match(css, /padding:\s*10px/);
   assert.doesNotMatch(css, /border-left:\s*3px solid/);
   assert.match(css, /-webkit-app-region:\s*drag/);

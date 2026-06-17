@@ -73,6 +73,8 @@ function ensureTranslateWindow() {
     title: 'WordHook 翻译',
     show: false,
     frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
     resizable: true,
     minWidth: 320,
     minHeight: 240,

@@ -28,8 +28,20 @@ test('translation popup is borderless until hovered and remains draggable', () =
   const html = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.html'), 'utf8');
 
   assert.match(html, /class="drag-strip"/);
-  assert.match(css, /border:\s*1px solid transparent/);
-  assert.match(css, /body:hover\s*\{[\s\S]*border-color:\s*#ddd/);
+  assert.match(html, /class="glass-shell"/);
+  assert.doesNotMatch(css, /body\s*\{[^}]*\bborder\s*:/);
+  assert.match(css, /\.glass-shell\s*\{[\s\S]*outline:\s*1px solid transparent/);
+  assert.match(css, /\.glass-shell:hover\s*\{[\s\S]*outline-color:\s*rgba\(255,\s*255,\s*255,\s*0\.62\)/);
+  assert.doesNotMatch(css, /border-left:\s*3px solid/);
   assert.match(css, /-webkit-app-region:\s*drag/);
   assert.match(css, /-webkit-app-region:\s*no-drag/);
+});
+
+test('translation popup uses ios-style frosted glass surface', () => {
+  const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
+
+  assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\)/);
+  assert.match(css, /backdrop-filter:\s*blur\(22px\) saturate\(180%\)/);
+  assert.match(css, /-webkit-backdrop-filter:\s*blur\(22px\) saturate\(180%\)/);
+  assert.match(css, /border-radius:\s*14px/);
 });

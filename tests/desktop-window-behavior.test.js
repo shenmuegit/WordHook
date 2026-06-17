@@ -71,6 +71,8 @@ test('translation window is resizable and foreground-oriented', () => {
   assert.equal(createdWindows[0].options.width, 420);
   assert.equal(createdWindows[0].options.height, 360);
   assert.equal(createdWindows[0].options.frame, false);
+  assert.equal(createdWindows[0].options.transparent, true);
+  assert.equal(createdWindows[0].options.backgroundColor, '#00000000');
   assert.equal(createdWindows[0].options.resizable, true);
   assert.equal(createdWindows[0].options.skipTaskbar, true);
   assert.equal(createdWindows[0].options.alwaysOnTop, true);

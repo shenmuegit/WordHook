@@ -35,6 +35,7 @@ function loadWindowsModule() {
     restore() { this.calls.push(['restore']); }
     moveTop() { this.calls.push(['moveTop']); }
     setAlwaysOnTop(value, level) { this.calls.push(['setAlwaysOnTop', value, level]); }
+    setMenu(value) { this.calls.push(['setMenu', value]); }
     getBounds() { return { x: this.options.x, y: this.options.y, width: this.options.width, height: this.options.height }; }
     setBounds(bounds) {
       this.calls.push(['setBounds', bounds]);
@@ -213,4 +214,14 @@ test('hiding translation window preserves the existing window for next show', ()
   assert.equal(createdWindows.length, 1);
   assert(createdWindows[0].calls.some((call) => call[0] === 'hide'));
   assert(createdWindows[0].calls.some((call) => call[0] === 'show'));
+});
+
+test('configuration window hides the native menu bar', () => {
+  const { api, createdWindows } = loadWindowsModule();
+
+  api.openConfigWindow();
+
+  assert.equal(createdWindows.length, 1);
+  assert.equal(createdWindows[0].options.autoHideMenuBar, true);
+  assert(createdWindows[0].calls.some((call) => call[0] === 'setMenu' && call[1] === null));
 });

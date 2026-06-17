@@ -41,14 +41,9 @@ function createTrayImage() {
 }
 
 function rebuildTrayMenu() {
-  const label = hotkeyRegistered ? 'Disable Translate Hotkey' : 'Enable Translate Hotkey';
   const menu = Menu.buildFromTemplate([
-    { label: 'Translate Selection', click: translateCurrentSelection },
-    { label: 'Configuration', click: openConfigWindow },
-    { type: 'separator' },
-    { label, click: toggleHotkey },
-    { type: 'separator' },
-    { label: 'Exit', click: () => app.quit() }
+    { label: '配置', click: openConfigWindow },
+    { label: '退出', click: () => app.quit() }
   ]);
   tray.setContextMenu(menu);
 }
@@ -73,14 +68,6 @@ function registerConfiguredHotkey() {
   }
 
   rebuildTrayMenu();
-}
-
-async function toggleHotkey() {
-  currentConfig = await writeConfig({
-    ...currentConfig,
-    hotkeyEnabled: !hotkeyRegistered
-  });
-  registerConfiguredHotkey();
 }
 
 async function ensureConfig() {

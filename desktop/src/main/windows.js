@@ -28,11 +28,13 @@ function openConfigWindow() {
     height: 560,
     resizable: false,
     title: 'WordHook 配置',
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
+  configWindow.setMenu(null);
 
   configWindow.loadFile(rendererPath('config.html'));
   configWindow.on('closed', () => {

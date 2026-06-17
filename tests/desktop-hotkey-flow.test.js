@@ -39,3 +39,16 @@ test('config color picker can preview translator background without saving', () 
   assert.match(source, /ipcMain\.on\('config:preview-style'/);
   assert.match(source, /windowBackground:\s*style\?\.windowBackground/);
 });
+
+test('tray context menu only exposes Chinese configuration and exit actions', () => {
+  const source = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'main', 'app.js'), 'utf8');
+  const match = source.match(/function rebuildTrayMenu\(\) \{([\s\S]*?)\n\}/);
+
+  assert(match, 'rebuildTrayMenu function not found');
+  const body = match[1];
+
+  assert.match(body, /label:\s*'配置'/);
+  assert.match(body, /label:\s*'退出'/);
+  assert.doesNotMatch(body, /Translate Selection|Configuration|Exit|Enable Translate Hotkey|Disable Translate Hotkey/);
+  assert.doesNotMatch(body, /type:\s*'separator'/);
+});

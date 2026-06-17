@@ -42,7 +42,9 @@ test('desktop formats structured sentence analysis with the missing sentence pat
     ]
   });
 
-  assert.match(markdown, /\*\*句式\*\*/);
+  assert.match(markdown, /\| 项目 \| 内容 \|/);
+  assert.match(markdown, /\| 句式 \| 前半句说功能可用/);
   assert.match(markdown, /前半句说功能可用/);
-  assert.match(markdown, /\*\*重点词\*\*/);
+  assert.match(markdown, /\| 语法 \| 说明 \|/);
+  assert.match(markdown, /\| 重点词 \| 词性 \| 音标 \| 说明 \|/);
 });

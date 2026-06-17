@@ -14,6 +14,28 @@ function renderInline(value) {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
+function splitTableRow(line) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return null;
+  return trimmed.slice(1, -1).split(/(?<!\\)\|/).map((cell) => {
+    return cell.trim().replace(/\\\|/g, '|');
+  });
+}
+
+function isTableDivider(line) {
+  const cells = splitTableRow(line);
+  return !!cells?.length && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
+}
+
+function renderTable(rows) {
+  const [head, _divider, ...body] = rows;
+  const header = head.map((cell) => `<th>${renderInline(cell)}</th>`).join('');
+  const cells = body.map((row) => {
+    return `<tr>${row.map((cell) => `<td>${renderInline(cell)}</td>`).join('')}</tr>`;
+  }).join('');
+  return `<table><thead><tr>${header}</tr></thead><tbody>${cells}</tbody></table>`;
+}
+
 function renderMarkdown(markdown) {
   const lines = String(markdown ?? '').replace(/\r\n?/g, '\n').split('\n');
   const html = [];
@@ -25,10 +47,27 @@ function renderMarkdown(markdown) {
     inList = false;
   }
 
-  for (const rawLine of lines) {
+  for (let index = 0; index < lines.length; index++) {
+    const rawLine = lines[index];
     const line = rawLine.trim();
     if (!line) {
       closeList();
+      continue;
+    }
+
+    const tableHead = splitTableRow(line);
+    if (tableHead && isTableDivider(lines[index + 1] || '')) {
+      closeList();
+      const tableRows = [tableHead, splitTableRow(lines[index + 1])];
+      index += 2;
+      while (index < lines.length) {
+        const row = splitTableRow(lines[index]);
+        if (!row) break;
+        tableRows.push(row);
+        index++;
+      }
+      index--;
+      html.push(renderTable(tableRows));
       continue;
     }
 

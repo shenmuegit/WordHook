@@ -21,3 +21,15 @@ test('escapes html before rendering markdown', () => {
   assert.doesNotMatch(html, /<script>/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
 });
+
+test('renders markdown tables from structured analysis', () => {
+  const html = renderMarkdown(`| 项目 | 内容 |
+| --- | --- |
+| 翻译 | 它能工作，但是很慢。 |
+| 句式 | 前半句说可用。 |`);
+
+  assert.match(html, /<table>/);
+  assert.match(html, /<th>项目<\/th>/);
+  assert.match(html, /<td>翻译<\/td>/);
+  assert.match(html, /<td>它能工作，但是很慢。<\/td>/);
+});

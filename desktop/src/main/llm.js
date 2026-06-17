@@ -222,22 +222,33 @@ function extractPartialAnalysis(buf) {
   return data;
 }
 
-function line(label, value) {
-  return value ? `**${label}**\n${value}` : '';
+function tableCell(value) {
+  return String(value || '').replace(/\r?\n/g, '<br>').replace(/\|/g, '\\|').trim();
+}
+
+function markdownTable(headers, rows) {
+  const visibleRows = rows.filter((row) => row.some(Boolean));
+  if (!visibleRows.length) return '';
+  return [
+    `| ${headers.map(tableCell).join(' | ')} |`,
+    `| ${headers.map(() => '---').join(' | ')} |`,
+    ...visibleRows.map((row) => `| ${row.map(tableCell).join(' | ')} |`)
+  ].join('\n');
 }
 
 function formatWords(words) {
   if (!Array.isArray(words) || !words.length) return '';
-  const items = words.map((w) => {
-    const head = [w.word, w.pos, w.ipa].filter(Boolean).join(' ');
-    const details = [
+  const rows = words.map((w) => [
+    w.word || '词',
+    w.pos || '',
+    w.ipa || '',
+    [
       w.meaning_cn,
       w.example_en ? `例：${w.example_en}` : '',
       w.example_cn || ''
-    ].filter(Boolean);
-    return `- **${head || '词'}**${details.length ? `：${details.join('；')}` : ''}`;
-  });
-  return `**重点词**\n${items.join('\n')}`;
+    ].filter(Boolean).join('；')
+  ]);
+  return markdownTable(['重点词', '词性', '音标', '说明'], rows);
 }
 
 function formatAnalysisMarkdown(data, fallbackMode) {
@@ -245,16 +256,20 @@ function formatAnalysisMarkdown(data, fallbackMode) {
   const parts = [];
 
   if (mode === 'sentence') {
-    parts.push(line('翻译', data.translation_cn));
-    parts.push(line('直译', data.literal_cn));
-    parts.push(line('句式', data.structure_cn));
+    parts.push(markdownTable(['项目', '内容'], [
+      ['翻译', data.translation_cn],
+      ['直译', data.literal_cn],
+      ['句式', data.structure_cn]
+    ]));
   } else if (mode === 'zh_sentence') {
-    parts.push(line('翻译', data.english));
-    parts.push(line('句式', data.structure_cn));
+    parts.push(markdownTable(['项目', '内容'], [
+      ['翻译', data.english],
+      ['句式', data.structure_cn]
+    ]));
   }
 
   if (Array.isArray(data?.grammar_cn) && data.grammar_cn.length) {
-    parts.push(`**语法**\n${data.grammar_cn.map((g) => `- ${g}`).join('\n')}`);
+    parts.push(markdownTable(['语法', '说明'], data.grammar_cn.map((g, index) => [String(index + 1), g])));
   }
 
   const words = formatWords(data?.words);

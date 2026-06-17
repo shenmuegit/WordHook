@@ -105,6 +105,8 @@ test('translation popup uses ios-style frosted glass surface', () => {
   assert.match(css, /--window-radius:\s*18px/);
   assert.match(css, /border-radius:\s*var\(--window-radius\)/);
   assert.match(css, /clip-path:\s*inset\(0 round var\(--window-radius\)\)/);
+  assert.match(css, /\.markdown table\s*\{/);
+  assert.match(css, /\.markdown th,/);
   assert.match(js, /config:get/);
   assert.match(js, /--window-bg/);
   assert.match(js, /translation:style/);

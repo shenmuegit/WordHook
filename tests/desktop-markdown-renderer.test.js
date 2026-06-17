@@ -47,11 +47,11 @@ test('renders extension-style word cards', () => {
   assert.match(html, /<em>The app is slow\.<\/em>/);
 });
 
-test('renders emphasized quoted translation results', () => {
+test('renders emphasized translation results without quote block', () => {
   const html = renderMarkdown(`#### 翻译
-> **它能工作，但是很慢。**`);
+**它能工作，但是很慢。**`);
 
   assert.match(html, /<h4>翻译<\/h4>/);
-  assert.match(html, /<blockquote>/);
+  assert.doesNotMatch(html, /<blockquote>/);
   assert.match(html, /<strong>它能工作，但是很慢。<\/strong>/);
 });

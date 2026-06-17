@@ -48,7 +48,7 @@ test('desktop detects word and sentence modes like the extension', () => {
   assert.equal(detectMode('这个功能很慢。'), 'zh_sentence');
 });
 
-test('desktop formats translation as a bold quote without literal or structure rows', () => {
+test('desktop formats translation as bold text without literal or structure rows', () => {
   const markdown = formatAnalysisMarkdown({
     mode: 'sentence',
     translation_cn: '它能工作，但是很慢。',
@@ -68,7 +68,8 @@ test('desktop formats translation as a bold quote without literal or structure r
   });
 
   assert.match(markdown, /#### 翻译/);
-  assert.match(markdown, /> \*\*它能工作，但是很慢。\*\*/);
+  assert.match(markdown, /\*\*它能工作，但是很慢。\*\*/);
+  assert.doesNotMatch(markdown, /> \*\*它能工作，但是很慢。\*\*/);
   assert.doesNotMatch(markdown, /#### 直译/);
   assert.doesNotMatch(markdown, /它·工作·但是·它·很慢/);
   assert.doesNotMatch(markdown, /#### 句式/);

@@ -11,7 +11,8 @@ function escapeHTML(value) {
 function renderInline(value) {
   return escapeHTML(value)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/_([^_]+)_/g, '<em>$1</em>');
 }
 
 function splitTableRow(line) {
@@ -40,6 +41,7 @@ function renderMarkdown(markdown) {
   const lines = String(markdown ?? '').replace(/\r\n?/g, '\n').split('\n');
   const html = [];
   let inList = false;
+  let inQuote = false;
 
   function closeList() {
     if (!inList) return;
@@ -47,13 +49,33 @@ function renderMarkdown(markdown) {
     inList = false;
   }
 
+  function closeQuote() {
+    if (!inQuote) return;
+    html.push('</blockquote>');
+    inQuote = false;
+  }
+
   for (let index = 0; index < lines.length; index++) {
     const rawLine = lines[index];
     const line = rawLine.trim();
     if (!line) {
       closeList();
+      closeQuote();
       continue;
     }
+
+    const quote = line.match(/^>\s?(.*)$/);
+    if (quote) {
+      closeList();
+      if (!inQuote) {
+        html.push('<blockquote>');
+        inQuote = true;
+      }
+      html.push(`<p>${renderInline(quote[1])}</p>`);
+      continue;
+    }
+
+    closeQuote();
 
     const tableHead = splitTableRow(line);
     if (tableHead && isTableDivider(lines[index + 1] || '')) {
@@ -83,7 +105,7 @@ function renderMarkdown(markdown) {
 
     closeList();
 
-    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    const heading = line.match(/^(#{1,4})\s+(.+)$/);
     if (heading) {
       const level = heading[1].length;
       html.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
@@ -94,6 +116,7 @@ function renderMarkdown(markdown) {
   }
 
   closeList();
+  closeQuote();
   return html.join('');
 }
 

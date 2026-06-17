@@ -48,7 +48,7 @@ test('desktop detects word and sentence modes like the extension', () => {
   assert.equal(detectMode('这个功能很慢。'), 'zh_sentence');
 });
 
-test('desktop formats structured sentence analysis without literal or structure rows', () => {
+test('desktop formats structured sentence analysis like the extension layout', () => {
   const markdown = formatAnalysisMarkdown({
     mode: 'sentence',
     translation_cn: '它能工作，但是很慢。',
@@ -67,11 +67,14 @@ test('desktop formats structured sentence analysis without literal or structure 
     ]
   });
 
-  assert.match(markdown, /\| 项目 \| 内容 \|/);
-  assert.match(markdown, /\| 翻译 \| 它能工作，但是很慢。 \|/);
-  assert.doesNotMatch(markdown, /直译/);
-  assert.doesNotMatch(markdown, /句式/);
-  assert.doesNotMatch(markdown, /前半句说功能可用/);
-  assert.match(markdown, /\| 语法 \| 说明 \|/);
-  assert.match(markdown, /\| 重点词 \| 词性 \| 音标 \| 说明 \|/);
+  assert.match(markdown, /#### 翻译/);
+  assert.match(markdown, /它能工作，但是很慢。/);
+  assert.match(markdown, /#### 直译/);
+  assert.match(markdown, /它·工作·但是·它·很慢/);
+  assert.match(markdown, /#### 句式/);
+  assert.match(markdown, /前半句说功能可用/);
+  assert.match(markdown, /#### 语法/);
+  assert.match(markdown, /- but 表示转折/);
+  assert.match(markdown, /#### 重点词/);
+  assert.match(markdown, /> \*\*slow 形容词 \/sloʊ\/\*\*/);
 });

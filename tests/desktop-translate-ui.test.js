@@ -90,7 +90,7 @@ test('translation popup is borderless until hovered and remains draggable', () =
   assert.match(css, /\.glass-shell\s*\{[\s\S]*outline:\s*1px solid transparent/);
   assert.match(css, /\.glass-shell\.is-hovered\s*\{[\s\S]*outline-color:\s*rgba\(90,\s*90,\s*96,\s*0\.38\)/);
   assert.match(css, /padding:\s*10px/);
-  assert.doesNotMatch(css, /border-left:\s*3px solid/);
+  assert.doesNotMatch(css, /\.glass-shell\s*\{[^}]*border-left:\s*3px solid/);
   assert.match(css, /\.drag-strip\s*\{[\s\S]*-webkit-app-region:\s*no-drag/);
   assert.match(css, /-webkit-app-region:\s*no-drag/);
 });
@@ -105,8 +105,9 @@ test('translation popup uses ios-style frosted glass surface', () => {
   assert.match(css, /--window-radius:\s*18px/);
   assert.match(css, /border-radius:\s*var\(--window-radius\)/);
   assert.match(css, /clip-path:\s*inset\(0 round var\(--window-radius\)\)/);
-  assert.match(css, /\.markdown table\s*\{/);
-  assert.match(css, /\.markdown th,/);
+  assert.match(css, /\.markdown h4\s*\{/);
+  assert.match(css, /\.markdown blockquote\s*\{/);
+  assert.match(css, /border-left:\s*3px solid #ff6600/);
   assert.match(js, /config:get/);
   assert.match(js, /--window-bg/);
   assert.match(js, /translation:style/);

@@ -33,3 +33,16 @@ test('renders markdown tables from structured analysis', () => {
   assert.match(html, /<td>翻译<\/td>/);
   assert.match(html, /<td>它能工作，但是很慢。<\/td>/);
 });
+
+test('renders extension-style word cards', () => {
+  const html = renderMarkdown(`#### 重点词
+> **slow 形容词 /sloʊ/**
+> 慢的
+> _The app is slow._
+> 这个应用很慢。`);
+
+  assert.match(html, /<h4>重点词<\/h4>/);
+  assert.match(html, /<blockquote>/);
+  assert.match(html, /<strong>slow 形容词 \/sloʊ\/<\/strong>/);
+  assert.match(html, /<em>The app is slow\.<\/em>/);
+});

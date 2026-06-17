@@ -53,8 +53,6 @@ function userPrompt(mode, text) {
 {
   "mode": "sentence",
   "translation_cn": "自然流畅的中文翻译",
-  "literal_cn": "逐词直译，用·连接中文词，让初学者建立英中词对应",
-  "structure_cn": "这句话在说什么、哪里转折，用大白话讲；不要主谓宾这种术语",
   "grammar_cn": ["语法点1，大白话解释", "语法点2"],
   "words": [
     {
@@ -100,7 +98,6 @@ function userPrompt(mode, text) {
 {
   "mode": "zh_sentence",
   "english": "自然流畅的英文翻译",
-  "structure_cn": "用中文讲这句英文在说什么、整体结构怎么搭起来，不要语法术语，用大白话",
   "grammar_cn": ["中文解释这句英文用到的一个语法点，要给出原文中的英文片段", "中文解释另一个语法点"],
   "words": [
     {
@@ -257,14 +254,11 @@ function formatAnalysisMarkdown(data, fallbackMode) {
 
   if (mode === 'sentence') {
     parts.push(markdownTable(['项目', '内容'], [
-      ['翻译', data.translation_cn],
-      ['直译', data.literal_cn],
-      ['句式', data.structure_cn]
+      ['翻译', data.translation_cn]
     ]));
   } else if (mode === 'zh_sentence') {
     parts.push(markdownTable(['项目', '内容'], [
-      ['翻译', data.english],
-      ['句式', data.structure_cn]
+      ['翻译', data.english]
     ]));
   }
 

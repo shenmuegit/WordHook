@@ -97,6 +97,7 @@ async function translateText(sourceText) {
 
   const text = String(sourceText || '').trim();
   openTranslateWindow(text);
+  sendToTranslate('translation:style', { windowBackground: currentConfig.windowBackground });
 
   if (!text) {
     sendToTranslate('translation:error', { error: '没有读取到选中文本' });
@@ -132,6 +133,7 @@ function registerIpc() {
     try {
       currentConfig = await writeConfig(nextConfig);
       registerConfiguredHotkey();
+      sendToTranslate('translation:style', { windowBackground: currentConfig.windowBackground });
       return { ok: true, config: currentConfig, hotkeyRegistered, hideHotkeyRegistered };
     } catch (error) {
       return { ok: false, error: String(error?.message || error) };

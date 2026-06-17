@@ -36,6 +36,22 @@ input[readonly] {
   background: #fafafa;
 }
 
+.color-row {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.color-row input {
+  margin-top: 0;
+}
+
+#windowBackgroundColor {
+  height: 34px;
+  padding: 2px;
+}
+
 .check {
   display: flex;
   align-items: center;

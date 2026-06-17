@@ -25,7 +25,7 @@ function openConfigWindow() {
 
   configWindow = new BrowserWindow({
     width: 420,
-    height: 500,
+    height: 560,
     resizable: false,
     title: 'WordHook 配置',
     webPreferences: {

@@ -60,8 +60,8 @@ test('translation UI shows a hover-only minimize button that hides the window', 
   assert.match(css, /\.glass-shell\.is-hovered\s+#hideWindow/);
   assert.match(css, /width:\s*12px/);
   assert.match(css, /height:\s*12px/);
-  assert.match(css, /top:\s*4px/);
-  assert.match(css, /left:\s*4px/);
+  assert.match(css, /top:\s*8px/);
+  assert.match(css, /left:\s*8px/);
   assert.doesNotMatch(css, /#hideWindow\s*\{[\s\S]*right:\s*4px/);
   assert.match(css, /background:\s*#ffbd2e/);
   assert.match(css, /#hideWindow::before/);
@@ -94,9 +94,14 @@ test('translation popup is borderless until hovered and remains draggable', () =
 
 test('translation popup uses ios-style frosted glass surface', () => {
   const css = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.css'), 'utf8');
+  const js = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'renderer', 'translate.js'), 'utf8');
 
-  assert.match(css, /background:\s*rgba\(255,\s*255,\s*255,\s*0\.72\)/);
+  assert.match(css, /background:\s*var\(--window-bg,\s*rgba\(255,\s*255,\s*255,\s*0\.72\)\)/);
   assert.match(css, /backdrop-filter:\s*blur\(22px\) saturate\(180%\)/);
   assert.match(css, /-webkit-backdrop-filter:\s*blur\(22px\) saturate\(180%\)/);
   assert.match(css, /border-radius:\s*14px/);
+  assert.match(css, /box-shadow:\s*0 12px 30px/);
+  assert.match(js, /config:get/);
+  assert.match(js, /--window-bg/);
+  assert.match(js, /translation:style/);
 });

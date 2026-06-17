@@ -9,6 +9,16 @@ const hideWindowButton = document.getElementById('hideWindow');
 let currentSource = '';
 let currentResult = '';
 
+function applyWindowStyle(style) {
+  if (style?.windowBackground) {
+    document.documentElement.style.setProperty('--window-bg', style.windowBackground);
+  }
+}
+
+ipcRenderer.invoke('config:get').then((config) => {
+  applyWindowStyle({ windowBackground: config.windowBackground });
+}).catch(() => {});
+
 function setResultText(value) {
   currentResult = value || '';
   resultEl.innerHTML = renderMarkdown(currentResult);
@@ -31,6 +41,10 @@ document.addEventListener('mouseleave', hideHoverChrome);
 ipcRenderer.on('translation:hover', (_event, payload) => {
   if (payload.hovered) showHoverChrome();
   else hideHoverChrome();
+});
+
+ipcRenderer.on('translation:style', (_event, payload) => {
+  applyWindowStyle(payload);
 });
 
 hideWindowButton.addEventListener('click', () => {

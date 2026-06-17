@@ -9,7 +9,8 @@ const DEFAULT_CONFIG = {
   hotkey: 'CommandOrControl+Shift+T',
   hotkeyEnabled: true,
   hideHotkey: 'CommandOrControl+Shift+H',
-  hideHotkeyEnabled: true
+  hideHotkeyEnabled: true,
+  windowBackground: 'rgba(255, 255, 255, 0.72)'
 };
 
 function configPath() {

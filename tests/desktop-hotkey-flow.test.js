@@ -25,3 +25,10 @@ test('hide hotkey is registered to the same hide action as the minimize button',
   assert.match(source, /globalShortcut\.register\(currentConfig\.hideHotkey,\s*hideTranslateWindow\)/);
   assert.match(source, /ipcMain\.on\('translation:hide'[\s\S]*hideTranslateWindow\(\)/);
 });
+
+test('saving config pushes translator background style to the window', () => {
+  const source = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'main', 'app.js'), 'utf8');
+
+  assert.match(source, /translation:style/);
+  assert.match(source, /windowBackground:\s*currentConfig\.windowBackground/);
+});

@@ -1,4 +1,4 @@
-const { clipboard, ipcRenderer } = require('electron');
+const { ipcRenderer } = require('electron');
 const { renderMarkdown } = require('./markdown');
 
 const sourceEl = document.getElementById('sourceText');
@@ -41,18 +41,4 @@ ipcRenderer.on('translation:done', (_event, payload) => {
 ipcRenderer.on('translation:error', (_event, payload) => {
   statusEl.textContent = payload.error || '翻译失败';
   statusEl.style.color = '#c0392b';
-});
-
-document.getElementById('copy').addEventListener('click', () => {
-  clipboard.writeText(resultEl.textContent || currentResult || '');
-  statusEl.textContent = '已复制';
-  statusEl.style.color = '#2a8a2a';
-});
-
-document.getElementById('retry').addEventListener('click', () => {
-  if (currentSource) ipcRenderer.send('translation:retry', { sourceText: currentSource });
-});
-
-document.getElementById('close').addEventListener('click', () => {
-  window.close();
 });

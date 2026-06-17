@@ -62,16 +62,17 @@ function loadWindowsModule() {
   return { api: context.module.exports, createdWindows };
 }
 
-test('translation window is compact and foreground-oriented', () => {
+test('translation window is resizable and foreground-oriented', () => {
   const { api, createdWindows } = loadWindowsModule();
 
   api.openTranslateWindow('hello');
 
   assert.equal(createdWindows.length, 1);
-  assert.equal(createdWindows[0].options.width, 360);
-  assert.equal(createdWindows[0].options.height, 260);
-  assert.equal(createdWindows[0].options.frame, false);
-  assert.equal(createdWindows[0].options.skipTaskbar, true);
+  assert.equal(createdWindows[0].options.width, 420);
+  assert.equal(createdWindows[0].options.height, 360);
+  assert.equal(createdWindows[0].options.frame, true);
+  assert.equal(createdWindows[0].options.resizable, true);
+  assert.equal(createdWindows[0].options.skipTaskbar, false);
   assert.equal(createdWindows[0].options.alwaysOnTop, true);
   assert(createdWindows[0].calls.some((call) => call[0] === 'restore'));
   assert(createdWindows[0].calls.some((call) => call[0] === 'show'));

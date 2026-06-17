@@ -62,8 +62,8 @@ function ensureTranslateWindow() {
 
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
-  const winWidth = 360;
-  const winHeight = 260;
+  const winWidth = 420;
+  const winHeight = 360;
 
   translateWindow = new BrowserWindow({
     width: winWidth,
@@ -72,9 +72,11 @@ function ensureTranslateWindow() {
     y: Math.max(0, height - winHeight - 18),
     title: 'WordHook 翻译',
     show: false,
-    frame: false,
-    resizable: false,
-    skipTaskbar: true,
+    frame: true,
+    resizable: true,
+    minWidth: 320,
+    minHeight: 240,
+    skipTaskbar: false,
     alwaysOnTop: true,
     webPreferences: {
       nodeIntegration: true,

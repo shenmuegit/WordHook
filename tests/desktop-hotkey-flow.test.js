@@ -32,3 +32,10 @@ test('saving config pushes translator background style to the window', () => {
   assert.match(source, /translation:style/);
   assert.match(source, /windowBackground:\s*currentConfig\.windowBackground/);
 });
+
+test('config color picker can preview translator background without saving', () => {
+  const source = fs.readFileSync(path.join(process.cwd(), 'desktop', 'src', 'main', 'app.js'), 'utf8');
+
+  assert.match(source, /ipcMain\.on\('config:preview-style'/);
+  assert.match(source, /windowBackground:\s*style\?\.windowBackground/);
+});

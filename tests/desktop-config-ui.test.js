@@ -16,6 +16,8 @@ test('desktop config UI exposes separate translate and hide hotkeys', () => {
   assert.match(js, /config\.hideHotkey/);
   assert.match(js, /config\.windowBackground/);
   assert.match(js, /windowBackgroundColor/);
+  assert.match(js, /config:preview-style/);
+  assert.match(js, /previewWindowBackground/);
   assert.match(js, /hideHotkeyEnabled/);
   assert.match(store, /hideHotkey:\s*'CommandOrControl\+Shift\+H'/);
   assert.match(store, /windowBackground:\s*'rgba\(255, 255, 255, 0\.72\)'/);

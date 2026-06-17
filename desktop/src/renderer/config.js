@@ -40,6 +40,12 @@ async function loadConfig() {
   $('windowBackgroundColor').value = rgbaToHex($('windowBackground').value);
 }
 
+function previewWindowBackground() {
+  ipcRenderer.send('config:preview-style', {
+    windowBackground: $('windowBackground').value.trim() || DEFAULT_WINDOW_BACKGROUND
+  });
+}
+
 $('save').addEventListener('click', async () => {
   const next = {
     baseURL: $('baseURL').value.trim(),
@@ -84,10 +90,12 @@ bindHotkeyInput('hideHotkey', '隐藏快捷键');
 
 $('windowBackgroundColor').addEventListener('input', () => {
   $('windowBackground').value = hexToRgba($('windowBackgroundColor').value);
+  previewWindowBackground();
 });
 
 $('windowBackground').addEventListener('input', () => {
   $('windowBackgroundColor').value = rgbaToHex($('windowBackground').value);
+  previewWindowBackground();
 });
 
 loadConfig();

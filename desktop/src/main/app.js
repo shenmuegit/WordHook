@@ -140,6 +140,10 @@ function registerIpc() {
     }
   });
 
+  ipcMain.on('config:preview-style', (_event, style) => {
+    sendToTranslate('translation:style', { windowBackground: style?.windowBackground });
+  });
+
   ipcMain.on('translation:retry', (_event, payload) => {
     translateText(payload?.sourceText || '');
   });

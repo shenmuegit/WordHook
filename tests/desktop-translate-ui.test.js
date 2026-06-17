@@ -46,6 +46,7 @@ test('translation UI exposes drag and resize hit areas for a frameless window', 
   assert.match(css, /\.drag-strip\s*\{[\s\S]*left:\s*24px/);
   assert.match(css, /\.drag-strip\s*\{[\s\S]*cursor:\s*move/);
   assert.match(css, /\.resize-handle/);
+  assert.doesNotMatch(css, /body:hover\s+\.resize-handle\s*\{[\s\S]*background:/);
   assert.match(js, /translation:move-start/);
   assert.match(js, /translation:move-end/);
   assert.match(js, /translation:resize-start/);

@@ -127,10 +127,6 @@ body:hover .glass-shell,
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.58);
 }
 
-body:hover .resize-handle {
-  background: rgba(90, 90, 96, 0.04);
-}
-
 #hideWindow {
   position: fixed;
   top: 8px;

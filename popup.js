@@ -28,6 +28,7 @@ function setCardStatus(msg, kind = '') {
 function originOf(urlStr) {
   try {
     const u = new URL(urlStr);
+    if (u.protocol !== 'https:') return null;
     return `${u.protocol}//${u.host}/*`;
   } catch {
     return null;
@@ -45,7 +46,7 @@ $('save').addEventListener('click', async () => {
   }
   const origin = originOf(baseURL);
   if (!origin) {
-    setStatus('baseURL 不是合法 URL', 'err');
+    setStatus('baseURL 必须使用 HTTPS', 'err');
     return;
   }
 

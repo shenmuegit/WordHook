@@ -20,7 +20,7 @@ function createElement(id, initialValue = '') {
   };
 }
 
-test('popup saves API config before requesting host permission', async () => {
+test('popup saves HTTPS API config before requesting host permission', async () => {
   const events = [];
   const elements = {
     baseURL: createElement('baseURL', 'https://api.example.com/v1'),
@@ -84,4 +84,11 @@ test('popup saves API config before requesting host permission', async () => {
     apiKey: 'sk-example'
   });
   assert.equal(events[2], 'permissions.request');
+
+  events.length = 0;
+  elements.baseURL.value = 'http://api.example.com/v1';
+  await elements.save.onclick();
+
+  assert.deepEqual(events, []);
+  assert.equal(elements.status.textContent, 'baseURL 必须使用 HTTPS');
 });

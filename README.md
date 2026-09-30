@@ -26,7 +26,7 @@
 
 ### 方式 A：下载 Release 包（推荐）
 
-1. 下载 [wordhook-v0.3.1.zip](https://github.com/shenmuegit/WordHook/releases/download/v0.3.1/wordhook-v0.3.1.zip) 并解压
+1. 下载 [WordHook-0.4.0-extension.zip](https://github.com/shenmuegit/WordHook/releases/download/v0.4.0/WordHook-0.4.0-extension.zip) 并解压
 2. 打开 `chrome://extensions/`，右上角开启「**开发者模式**」
 3. 点「**加载已解压的扩展程序**」，选解压后的文件夹
 

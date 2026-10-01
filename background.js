@@ -21,12 +21,18 @@ async function getCache() {
   return cache || {};
 }
 
-async function setCacheEntry(key, value) {
-  const cache = await getCache();
-  cache[key] = value;
-  const keys = Object.keys(cache);
-  if (keys.length > 500) delete cache[keys[0]];
-  await chrome.storage.local.set({ [CACHE_KEY]: cache });
+let cacheWrite = Promise.resolve();
+
+function setCacheEntry(key, value) {
+  const write = cacheWrite.then(async () => {
+    const cache = await getCache();
+    cache[key] = value;
+    const keys = Object.keys(cache);
+    if (keys.length > 500) delete cache[keys[0]];
+    await chrome.storage.local.set({ [CACHE_KEY]: cache });
+  });
+  cacheWrite = write.catch(() => {});
+  return write;
 }
 
 function cacheKey(baseURL, model, mode, text) {

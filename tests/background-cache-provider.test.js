@@ -68,3 +68,28 @@ test('extension fetches a fresh answer after the API endpoint changes', async ()
     'https://second.example/v1/chat/completions'
   ]);
 });
+
+test('concurrent analyses keep both cache entries', async () => {
+  const store = {};
+  const context = {
+    importScripts() {},
+    WordHookPrompt: { SYSTEM_PROMPT: '', userPrompt() {} },
+    chrome: {
+      storage: { local: {
+        get: async (key) => ({ [key]: structuredClone(store[key]) }),
+        set: async (values) => Object.assign(store, values)
+      } },
+      runtime: {
+        onConnect: { addListener() {} },
+        onMessage: { addListener() {} }
+      }
+    }
+  };
+  vm.createContext(context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'background.js'), 'utf8'), context);
+  const setCacheEntry = vm.runInContext('setCacheEntry', context);
+
+  await Promise.all([setCacheEntry('first', 1), setCacheEntry('second', 2)]);
+
+  assert.deepEqual(Object.keys(store.llm_cache_v1).sort(), ['first', 'second']);
+});

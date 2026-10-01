@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
-function loadSelectionModule() {
+function loadSelectionModule(options = {}) {
   const events = [];
   const children = [];
   const clipboard = {
@@ -36,7 +36,9 @@ function loadSelectionModule() {
                 write(value) {
                   events.push(['stdin.write', value]);
                   if (value === 'GET_FOREGROUND\n') {
-                    setImmediate(() => child.stdoutHandler(Buffer.from('HWND 12345\n')));
+                    setImmediate(() => options.exitOnForeground
+                      ? child.exitHandler(1)
+                      : child.stdoutHandler(Buffer.from('HWND 12345\n')));
                     return;
                   }
                   if (value.startsWith('COPY')) {
@@ -57,7 +59,9 @@ function loadSelectionModule() {
               }
             };
             children.push(child);
-            setImmediate(() => child.stdoutHandler(Buffer.from('READY\n')));
+            setImmediate(() => options.exitBeforeReady
+              ? child.exitHandler(1)
+              : child.stdoutHandler(Buffer.from('READY\n')));
             return child;
           },
           execFile(_file, _args, _options, callback) {
@@ -76,6 +80,16 @@ function loadSelectionModule() {
   vm.runInNewContext(source, context, { filename: 'selection.js' });
 
   return { api: context.module.exports, events, children };
+}
+
+function withTimeout(promise) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('timed out waiting for helper')), 500);
+    })
+  ]).finally(() => clearTimeout(timer));
 }
 
 test('capture waits for global hotkey release before sending copy', async () => {
@@ -126,4 +140,16 @@ test('selection capture copies from the foreground window captured at hotkey tim
 
   assert(events.some((event) => event[0] === 'stdin.write' && event[1] === 'GET_FOREGROUND\n'));
   assert(events.some((event) => event[0] === 'stdin.write' && event[1] === 'COPY 12345\n'));
+});
+
+test('helper startup rejects when PowerShell exits before READY', async () => {
+  const { api } = loadSelectionModule({ exitBeforeReady: true });
+
+  await assert.rejects(withTimeout(api.warmSelectionCapture()), /helper exited/i);
+});
+
+test('an in-flight capture rejects when the helper exits', async () => {
+  const { api } = loadSelectionModule({ exitOnForeground: true });
+
+  await assert.rejects(withTimeout(api.captureSelectedText()), /helper exited/i);
 });

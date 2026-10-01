@@ -274,6 +274,11 @@
   }
 
   function hidePopup() {
+    inFlight++;
+    if (currentPort) {
+      try { currentPort.disconnect(); } catch {}
+      currentPort = null;
+    }
     const host = document.getElementById(HOST_ID);
     if (!host) return;
     host.shadowRoot.querySelector('.popup').hidden = true;

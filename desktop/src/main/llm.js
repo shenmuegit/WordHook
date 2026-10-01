@@ -208,6 +208,7 @@ async function streamChatCompletion(config, text, handlers = {}) {
     const { done, value } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
+    buffer = buffer.replace(/\r\n/g, '\n');
 
     let separatorIndex;
     while ((separatorIndex = buffer.indexOf('\n\n')) >= 0) {

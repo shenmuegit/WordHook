@@ -76,8 +76,9 @@ async function streamLLM({ baseURL, apiKey, model }, mode, text, onChunk, signal
     const { done, value } = await reader.read();
     if (done) break;
     buffer += decoder.decode(value, { stream: true });
+    buffer = buffer.replace(/\r\n/g, '\n');
 
-    // SSE 用 \n\n 分隔事件；每个事件可能多行
+    // 兼容 SSE 的 CRLF 行尾，再用 \n\n 分隔事件；每个事件可能多行
     let sepIdx;
     while ((sepIdx = buffer.indexOf('\n\n')) >= 0) {
       const event = buffer.slice(0, sepIdx);

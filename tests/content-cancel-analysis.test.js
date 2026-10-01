@@ -4,12 +4,15 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
-test('closing the popup cancels an active analysis and ignores late messages', () => {
+test('closing or restarting analysis drops queued preview frames', () => {
   const listeners = {};
   const sent = [];
+  const frames = [];
+  const modeClicks = {};
   let portMessage;
   let disconnects = 0;
   let mountedHost = null;
+  let selectionText = 'hello';
   const node = () => ({
     style: {},
     addEventListener() {},
@@ -26,6 +29,7 @@ test('closing the popup cancels an active analysis and ignores late messages', (
   };
   const modeButtons = ['word', 'sentence'].map((mode) => ({
     ...node(),
+    addEventListener(_type, handler) { modeClicks[mode] = handler; },
     getAttribute: () => mode
   }));
   const shadow = {
@@ -45,7 +49,7 @@ test('closing the popup cancels an active analysis and ignores late messages', (
   };
   const selection = {
     isCollapsed: false,
-    toString: () => 'hello',
+    toString: () => selectionText,
     getRangeAt: () => ({
       getBoundingClientRect: () => ({ left: 10, bottom: 30, width: 20, height: 10 })
     })
@@ -60,7 +64,8 @@ test('closing the popup cancels an active analysis and ignores late messages', (
     },
     window: { scrollX: 0, scrollY: 0, innerWidth: 1000, getSelection: () => selection },
     speechSynthesis: { getVoices: () => [], addEventListener() {} },
-    setTimeout: (callback) => callback()
+    setTimeout: (callback) => callback(),
+    requestAnimationFrame: (callback) => frames.push(callback)
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'content.js'), 'utf8'), context);
 
@@ -70,8 +75,11 @@ test('closing the popup cancels an active analysis and ignores late messages', (
   assert.equal(sent[0].text, 'hello');
   const beforeClose = body.innerHTML;
 
+  portMessage({ type: 'chunk', accumulated: '{"words":[{"word":"hello","meaning_cn":"old"}]}' });
+  assert.equal(frames.length, 1);
   listeners.keydown({ key: 'Escape' });
   portMessage({ type: 'error', error: 'late response' });
+  frames.shift()();
 
   assert.deepEqual({
     hidden: popup.hidden,
@@ -82,4 +90,14 @@ test('closing the popup cancels an active analysis and ignores late messages', (
     disconnects: 1,
     ignoredLateMessage: true
   });
+
+  selectionText = 'world';
+  listeners.mouseup({ target: {} });
+  portMessage({ type: 'chunk', accumulated: '{"words":[{"word":"world","meaning_cn":"stale"}]}' });
+  assert.equal(frames.length, 1);
+  modeClicks.sentence();
+  const beforeFrame = body.innerHTML;
+  assert.match(beforeFrame, /分析中/);
+  frames.shift()();
+  assert.equal(body.innerHTML, beforeFrame);
 });

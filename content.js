@@ -275,6 +275,7 @@
 
   function hidePopup() {
     inFlight++;
+    pendingHTML = null;
     if (currentPort) {
       try { currentPort.disconnect(); } catch {}
       currentPort = null;
@@ -307,6 +308,7 @@
   }
 
   function renderLoading() {
+    pendingHTML = null;
     bodyEl().innerHTML = `<div class="loading">分析中…</div>`;
     shadow().querySelector('.cached-tag').hidden = true;
   }

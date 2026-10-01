@@ -29,8 +29,8 @@ async function setCacheEntry(key, value) {
   await chrome.storage.local.set({ [CACHE_KEY]: cache });
 }
 
-function cacheKey(model, mode, text) {
-  return `${model}::${mode}::${text}`;
+function cacheKey(baseURL, model, mode, text) {
+  return `${baseURL}::${model}::${mode}::${text}`;
 }
 
 // ——— SSE 流式解析 ———
@@ -133,7 +133,7 @@ chrome.runtime.onConnect.addListener((port) => {
       }
 
       // 缓存命中：直接 done
-      const key = cacheKey(cfg.model, mode, text);
+      const key = cacheKey(cfg.baseURL, cfg.model, mode, text);
       const cache = await getCache();
       if (cache[key]) {
         safePost({ type: 'done', data: cache[key], cached: true });

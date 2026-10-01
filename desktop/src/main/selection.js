@@ -65,11 +65,13 @@ while ($true) {
 `;
 }
 
-function resetHelper() {
+function resetHelper(error = new Error('Selection helper stopped')) {
+  const pending = pendingCommand;
   helper = null;
   helperReady = null;
   pendingCommand = null;
   stdoutBuffer = '';
+  pending?.reject(error);
 }
 
 function handleHelperLine(line) {
@@ -102,29 +104,35 @@ function ensureHelper() {
   if (helperReady) return helperReady;
 
   helperReady = new Promise((resolve, reject) => {
-    helper = spawn(
+    const child = spawn(
       'powershell.exe',
       ['-NoProfile', '-STA', '-NoLogo', '-Command', helperScript()],
       { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }
     );
+    helper = child;
+    let ready = false;
 
     const onReady = (chunk) => {
+      if (helper !== child) return;
       stdoutBuffer += chunk.toString('utf8');
       if (!stdoutBuffer.includes('READY')) return;
-      helper.stdout.off?.('data', onReady);
-      helper.stdout.on('data', handleStdout);
+      ready = true;
+      child.stdout.off?.('data', onReady);
+      child.stdout.on('data', handleStdout);
       stdoutBuffer = '';
       resolve();
     };
 
-    helper.stdout.on('data', onReady);
-    helper.stderr.on('data', () => {});
-    helper.on('error', (error) => {
-      resetHelper();
-      reject(error);
+    child.stdout.on('data', onReady);
+    child.stderr.on('data', () => {});
+    child.on('error', (error) => {
+      if (helper === child) resetHelper(error);
+      if (!ready) reject(error);
     });
-    helper.on('exit', () => {
-      resetHelper();
+    child.on('exit', (code) => {
+      const error = new Error(`Selection helper exited (code ${code})`);
+      if (helper === child) resetHelper(error);
+      if (!ready) reject(error);
     });
   });
 
@@ -144,7 +152,7 @@ async function sendCtrlC() {
       reject(new Error('Copy helper is busy'));
       return;
     }
-    pendingCommand = { type: 'copy', resolve };
+    pendingCommand = { type: 'copy', resolve, reject };
     helper.stdin.write('COPY\n', (error) => {
       if (error) {
         pendingCommand = null;
@@ -162,7 +170,7 @@ async function getForegroundWindowHandle() {
       reject(new Error('Copy helper is busy'));
       return;
     }
-    pendingCommand = { type: 'foreground', resolve };
+    pendingCommand = { type: 'foreground', resolve, reject };
     helper.stdin.write('GET_FOREGROUND\n', (error) => {
       if (error) {
         pendingCommand = null;
@@ -185,7 +193,7 @@ async function sendCtrlCToWindow(windowHandle) {
       reject(new Error('Copy helper is busy'));
       return;
     }
-    pendingCommand = { type: 'copy', resolve };
+    pendingCommand = { type: 'copy', resolve, reject };
     helper.stdin.write(`COPY ${windowHandle || 0}\n`, (error) => {
       if (error) {
         pendingCommand = null;
